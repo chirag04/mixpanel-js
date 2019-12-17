@@ -6,12 +6,12 @@ var Config = {
 };
 
 // since es6 imports are static and we run unit tests from the console, window won't be defined when importing this file
-var window$1;
+var win;
 if (typeof(window) === 'undefined') {
     var loc = {
         hostname: ''
     };
-    window$1 = {
+    win = {
         navigator: { userAgent: '' },
         document: {
             location: loc,
@@ -21,7 +21,7 @@ if (typeof(window) === 'undefined') {
         location: loc
     };
 } else {
-    window$1 = window;
+    win = window;
 }
 
 
@@ -37,12 +37,12 @@ var ObjProto = Object.prototype;
 var slice = ArrayProto.slice;
 var toString = ObjProto.toString;
 var hasOwnProperty = ObjProto.hasOwnProperty;
-var windowConsole = window$1.console;
-var navigator$1 = window$1.navigator;
-var document$1 = window$1.document;
-var windowOpera = window$1.opera;
-var screen = window$1.screen;
-var userAgent = navigator$1.userAgent;
+var windowConsole = win.console;
+var navigator = win.navigator;
+var document = win.document;
+var windowOpera = win.opera;
+var screen = win.screen;
+var userAgent = navigator.userAgent;
 var nativeBind = FuncProto.bind;
 var nativeForEach = ArrayProto.forEach;
 var nativeIndexOf = ArrayProto.indexOf;
@@ -56,7 +56,7 @@ var _ = {
 };
 
 // Console override
-var console$1 = {
+var console = {
     /** @type {function(...[*])} */
     log: function() {
         if (Config.DEBUG && !_.isUndefined(windowConsole) && windowConsole) {
@@ -347,9 +347,9 @@ _.safewrap = function(f) {
         try {
             return f.apply(this, arguments);
         } catch (e) {
-            console$1.critical('Implementation error. Please turn on debug and contact support@mixpanel.com.');
+            console.critical('Implementation error. Please turn on debug and contact support@mixpanel.com.');
             if (Config.DEBUG){
-                console$1.critical(e);
+                console.critical(e);
             }
         }
     };
@@ -960,7 +960,7 @@ _.getHashParam = function(hash, param) {
 _.cookie = {
     get: function(name) {
         var nameEQ = name + '=';
-        var ca = document$1.cookie.split(';');
+        var ca = document.cookie.split(';');
         for (var i = 0; i < ca.length; i++) {
             var c = ca[i];
             while (c.charAt(0) == ' ') {
@@ -989,7 +989,7 @@ _.cookie = {
             secure = '';
 
         if (cross_subdomain) {
-            var matches = document$1.location.hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z\.]{2,6}$/i),
+            var matches = document.location.hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z\.]{2,6}$/i),
                 domain = matches ? matches[0] : '';
 
             cdomain = ((domain) ? '; domain=.' + domain : '');
@@ -1005,14 +1005,14 @@ _.cookie = {
             secure = '; secure';
         }
 
-        document$1.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/' + cdomain + secure;
+        document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/' + cdomain + secure;
     },
 
     set: function(name, value, days, cross_subdomain, is_secure) {
         var cdomain = '', expires = '', secure = '';
 
         if (cross_subdomain) {
-            var matches = document$1.location.hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z\.]{2,6}$/i),
+            var matches = document.location.hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z\.]{2,6}$/i),
                 domain = matches ? matches[0] : '';
 
             cdomain   = ((domain) ? '; domain=.' + domain : '');
@@ -1029,7 +1029,7 @@ _.cookie = {
         }
 
         var new_cookie_val = name + '=' + encodeURIComponent(value) + expires + '; path=/' + cdomain + secure;
-        document$1.cookie = new_cookie_val;
+        document.cookie = new_cookie_val;
         return new_cookie_val;
     },
 
@@ -1059,7 +1059,7 @@ _.localStorage = {
             supported = false;
         }
         if (!supported) {
-            console$1.error('localStorage unsupported; falling back to cookie store');
+            console.error('localStorage unsupported; falling back to cookie store');
         }
 
         _localStorage_supported = supported;
@@ -1067,7 +1067,7 @@ _.localStorage = {
     },
 
     error: function(msg) {
-        console$1.error('localStorage error: ' + msg);
+        console.error('localStorage error: ' + msg);
     },
 
     get: function(name) {
@@ -1122,7 +1122,7 @@ _.register_event = (function() {
      */
     var register_event = function(element, type, handler, oldSchool, useCapture) {
         if (!element) {
-            console$1.error('No valid element provided to register_event');
+            console.error('No valid element provided to register_event');
             return;
         }
 
@@ -1222,13 +1222,13 @@ _.dom_query = (function() {
 
     function getElementsBySelector(selector) {
         // Attempt to fail gracefully in lesser browsers
-        if (!document$1.getElementsByTagName) {
+        if (!document.getElementsByTagName) {
             return [];
         }
         // Split selector in to tokens
         var tokens = selector.split(' ');
         var token, bits, tagName, found, foundCount, i, j, k, elements, currentContextIndex;
-        var currentContext = [document$1];
+        var currentContext = [document];
         for (i = 0; i < tokens.length; i++) {
             token = tokens[i].replace(/^\s+/, '').replace(/\s+$/, '');
             if (token.indexOf('#') > -1) {
@@ -1236,7 +1236,7 @@ _.dom_query = (function() {
                 bits = token.split('#');
                 tagName = bits[0];
                 var id = bits[1];
-                var element = document$1.getElementById(id);
+                var element = document.getElementById(id);
                 if (!element || (tagName && element.nodeName.toLowerCase() != tagName)) {
                     // element not found or tag with that ID not found, return false
                     return [];
@@ -1383,7 +1383,7 @@ _.info = {
             kw = '',
             params = {};
         _.each(campaign_keywords, function(kwkey) {
-            kw = _.getQueryParam(document$1.URL, kwkey);
+            kw = _.getQueryParam(document.URL, kwkey);
             if (kw.length) {
                 params[kwkey] = kw;
             }
@@ -1559,13 +1559,13 @@ _.info = {
     properties: function() {
         return _.extend(_.strip_empty_properties({
             '$os': _.info.os(),
-            '$browser': _.info.browser(userAgent, navigator$1.vendor, windowOpera),
-            '$referrer': document$1.referrer,
-            '$referring_domain': _.info.referringDomain(document$1.referrer),
+            '$browser': _.info.browser(userAgent, navigator.vendor, windowOpera),
+            '$referrer': document.referrer,
+            '$referring_domain': _.info.referringDomain(document.referrer),
             '$device': _.info.device(userAgent)
         }), {
-            '$current_url': window$1.location.href,
-            '$browser_version': _.info.browserVersion(userAgent, navigator$1.vendor, windowOpera),
+            '$current_url': win.location.href,
+            '$browser_version': _.info.browserVersion(userAgent, navigator.vendor, windowOpera),
             '$screen_height': screen.height,
             '$screen_width': screen.width,
             'mp_lib': 'web',
@@ -1576,17 +1576,17 @@ _.info = {
     people_properties: function() {
         return _.extend(_.strip_empty_properties({
             '$os': _.info.os(),
-            '$browser': _.info.browser(userAgent, navigator$1.vendor, windowOpera)
+            '$browser': _.info.browser(userAgent, navigator.vendor, windowOpera)
         }), {
-            '$browser_version': _.info.browserVersion(userAgent, navigator$1.vendor, windowOpera)
+            '$browser_version': _.info.browserVersion(userAgent, navigator.vendor, windowOpera)
         });
     },
 
     pageviewInfo: function(page) {
         return _.strip_empty_properties({
             'mp_page': page,
-            'mp_referrer': document$1.referrer,
-            'mp_browser': _.info.browser(userAgent, navigator$1.vendor, windowOpera),
+            'mp_referrer': document.referrer,
+            'mp_browser': _.info.browser(userAgent, navigator.vendor, windowOpera),
             'mp_platform': _.info.os()
         });
     }
@@ -1603,779 +1603,6 @@ _['info']               = _.info;
 _['info']['device']     = _.info.device;
 _['info']['browser']    = _.info.browser;
 _['info']['properties'] = _.info.properties;
-
-/*
- * Get the className of an element, accounting for edge cases where element.className is an object
- * @param {Element} el - element to get the className of
- * @returns {string} the element's class
- */
-function getClassName(el) {
-    switch(typeof el.className) {
-        case 'string':
-            return el.className;
-        case 'object': // handle cases where className might be SVGAnimatedString or some other type
-            return el.className.baseVal || el.getAttribute('class') || '';
-        default: // future proof
-            return '';
-    }
-}
-
-/*
- * Get the direct text content of an element, protecting against sensitive data collection.
- * Concats textContent of each of the element's text node children; this avoids potential
- * collection of sensitive data that could happen if we used element.textContent and the
- * element had sensitive child elements, since element.textContent includes child content.
- * Scrubs values that look like they could be sensitive (i.e. cc or ssn number).
- * @param {Element} el - element to get the text of
- * @returns {string} the element's direct text content
- */
-function getSafeText(el) {
-    var elText = '';
-
-    if (shouldTrackElement(el) && el.childNodes && el.childNodes.length) {
-        _.each(el.childNodes, function(child) {
-            if (isTextNode(child) && child.textContent) {
-                elText += _.trim(child.textContent)
-                    // scrub potentially sensitive values
-                    .split(/(\s+)/).filter(shouldTrackValue).join('')
-                    // normalize whitespace
-                    .replace(/[\r\n]/g, ' ').replace(/[ ]+/g, ' ')
-                    // truncate
-                    .substring(0, 255);
-            }
-        });
-    }
-
-    return _.trim(elText);
-}
-
-/*
- * Check whether an element has nodeType Node.ELEMENT_NODE
- * @param {Element} el - element to check
- * @returns {boolean} whether el is of the correct nodeType
- */
-function isElementNode(el) {
-    return el && el.nodeType === 1; // Node.ELEMENT_NODE - use integer constant for browser portability
-}
-
-/*
- * Check whether an element is of a given tag type.
- * Due to potential reference discrepancies (such as the webcomponents.js polyfill),
- * we want to match tagNames instead of specific references because something like
- * element === document.body won't always work because element might not be a native
- * element.
- * @param {Element} el - element to check
- * @param {string} tag - tag name (e.g., "div")
- * @returns {boolean} whether el is of the given tag type
- */
-function isTag(el, tag) {
-    return el && el.tagName && el.tagName.toLowerCase() === tag.toLowerCase();
-}
-
-/*
- * Check whether an element has nodeType Node.TEXT_NODE
- * @param {Element} el - element to check
- * @returns {boolean} whether el is of the correct nodeType
- */
-function isTextNode(el) {
-    return el && el.nodeType === 3; // Node.TEXT_NODE - use integer constant for browser portability
-}
-
-/*
- * Check whether a DOM event should be "tracked" or if it may contain sentitive data
- * using a variety of heuristics.
- * @param {Element} el - element to check
- * @param {Event} event - event to check
- * @returns {boolean} whether the event should be tracked
- */
-function shouldTrackDomEvent(el, event) {
-    if (!el || isTag(el, 'html') || !isElementNode(el)) {
-        return false;
-    }
-    var tag = el.tagName.toLowerCase();
-    switch (tag) {
-        case 'html':
-            return false;
-        case 'form':
-            return event.type === 'submit';
-        case 'input':
-            if (['button', 'submit'].indexOf(el.getAttribute('type')) === -1) {
-                return event.type === 'change';
-            } else {
-                return event.type === 'click';
-            }
-        case 'select':
-        case 'textarea':
-            return event.type === 'change';
-        default:
-            return event.type === 'click';
-    }
-}
-
-/*
- * Check whether a DOM element should be "tracked" or if it may contain sentitive data
- * using a variety of heuristics.
- * @param {Element} el - element to check
- * @returns {boolean} whether the element should be tracked
- */
-function shouldTrackElement(el) {
-    for (var curEl = el; curEl.parentNode && !isTag(curEl, 'body'); curEl = curEl.parentNode) {
-        var classes = getClassName(curEl).split(' ');
-        if (_.includes(classes, 'mp-sensitive') || _.includes(classes, 'mp-no-track')) {
-            return false;
-        }
-    }
-
-    if (_.includes(getClassName(el).split(' '), 'mp-include')) {
-        return true;
-    }
-
-    // don't send data from inputs or similar elements since there will always be
-    // a risk of clientside javascript placing sensitive data in attributes
-    if (
-        isTag(el, 'input') ||
-        isTag(el, 'select') ||
-        isTag(el, 'textarea') ||
-        el.getAttribute('contenteditable') === 'true'
-    ) {
-        return false;
-    }
-
-    // don't include hidden or password fields
-    var type = el.type || '';
-    if (typeof type === 'string') { // it's possible for el.type to be a DOM element if el is a form with a child input[name="type"]
-        switch(type.toLowerCase()) {
-            case 'hidden':
-                return false;
-            case 'password':
-                return false;
-        }
-    }
-
-    // filter out data from fields that look like sensitive fields
-    var name = el.name || el.id || '';
-    if (typeof name === 'string') { // it's possible for el.name or el.id to be a DOM element if el is a form with a child input[name="name"]
-        var sensitiveNameRegex = /^cc|cardnum|ccnum|creditcard|csc|cvc|cvv|exp|pass|pwd|routing|seccode|securitycode|securitynum|socialsec|socsec|ssn/i;
-        if (sensitiveNameRegex.test(name.replace(/[^a-zA-Z0-9]/g, ''))) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-/*
- * Check whether a string value should be "tracked" or if it may contain sentitive data
- * using a variety of heuristics.
- * @param {string} value - string value to check
- * @returns {boolean} whether the element should be tracked
- */
-function shouldTrackValue(value) {
-    if (value === null || _.isUndefined(value)) {
-        return false;
-    }
-
-    if (typeof value === 'string') {
-        value = _.trim(value);
-
-        // check to see if input value looks like a credit card number
-        // see: https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9781449327453/ch04s20.html
-        var ccRegex = /^(?:(4[0-9]{12}(?:[0-9]{3})?)|(5[1-5][0-9]{14})|(6(?:011|5[0-9]{2})[0-9]{12})|(3[47][0-9]{13})|(3(?:0[0-5]|[68][0-9])[0-9]{11})|((?:2131|1800|35[0-9]{3})[0-9]{11}))$/;
-        if (ccRegex.test((value || '').replace(/[\- ]/g, ''))) {
-            return false;
-        }
-
-        // check to see if input value looks like a social security number
-        var ssnRegex = /(^\d{3}-?\d{2}-?\d{4}$)/;
-        if (ssnRegex.test(value)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-var autotrack = {
-    _initializedTokens: [],
-
-    _previousElementSibling: function(el) {
-        if (el.previousElementSibling) {
-            return el.previousElementSibling;
-        } else {
-            do {
-                el = el.previousSibling;
-            } while (el && !isElementNode(el));
-            return el;
-        }
-    },
-
-    _loadScript: function(scriptUrlToLoad, callback) {
-        var scriptTag = document.createElement('script');
-        scriptTag.type = 'text/javascript';
-        scriptTag.src = scriptUrlToLoad;
-        scriptTag.onload = callback;
-
-        var scripts = document.getElementsByTagName('script');
-        if (scripts.length > 0) {
-            scripts[0].parentNode.insertBefore(scriptTag, scripts[0]);
-        } else {
-            document.body.appendChild(scriptTag);
-        }
-    },
-
-    _getPropertiesFromElement: function(elem) {
-        var props = {
-            'classes': getClassName(elem).split(' '),
-            'tag_name': elem.tagName.toLowerCase()
-        };
-
-        if (shouldTrackElement(elem)) {
-            _.each(elem.attributes, function(attr) {
-                if (shouldTrackValue(attr.value)) {
-                    props['attr__' + attr.name] = attr.value;
-                }
-            });
-        }
-
-        var nthChild = 1;
-        var nthOfType = 1;
-        var currentElem = elem;
-        while (currentElem = this._previousElementSibling(currentElem)) { // eslint-disable-line no-cond-assign
-            nthChild++;
-            if (currentElem.tagName === elem.tagName) {
-                nthOfType++;
-            }
-        }
-        props['nth_child'] = nthChild;
-        props['nth_of_type'] = nthOfType;
-
-        return props;
-    },
-
-    _getDefaultProperties: function(eventType) {
-        return {
-            '$event_type': eventType,
-            '$ce_version': 1,
-            '$host': window.location.host,
-            '$pathname': window.location.pathname
-        };
-    },
-
-    _extractCustomPropertyValue: function(customProperty) {
-        var propValues = [];
-        _.each(document.querySelectorAll(customProperty['css_selector']), function(matchedElem) {
-            var value;
-
-            if (['input', 'select'].indexOf(matchedElem.tagName.toLowerCase()) > -1) {
-                value = matchedElem['value'];
-            } else if (matchedElem['textContent']) {
-                value = matchedElem['textContent'];
-            }
-
-            if (shouldTrackValue(value)) {
-                propValues.push(value);
-            }
-        });
-        return propValues.join(', ');
-    },
-
-    _getCustomProperties: function(targetElementList) {
-        var props = {};
-        _.each(this._customProperties, function(customProperty) {
-            _.each(customProperty['event_selectors'], function(eventSelector) {
-                var eventElements = document.querySelectorAll(eventSelector);
-                _.each(eventElements, function(eventElement) {
-                    if (_.includes(targetElementList, eventElement) && shouldTrackElement(eventElement)) {
-                        props[customProperty['name']] = this._extractCustomPropertyValue(customProperty);
-                    }
-                }, this);
-            }, this);
-        }, this);
-        return props;
-    },
-
-    _getEventTarget: function(e) {
-        // https://developer.mozilla.org/en-US/docs/Web/API/Event/target#Compatibility_notes
-        if (typeof e.target === 'undefined') {
-            return e.srcElement;
-        } else {
-            return e.target;
-        }
-    },
-
-    _trackEvent: function(e, instance) {
-        /*** Don't mess with this code without running IE8 tests on it ***/
-        var target = this._getEventTarget(e);
-        if (isTextNode(target)) { // defeat Safari bug (see: http://www.quirksmode.org/js/events_properties.html)
-            target = target.parentNode;
-        }
-
-        if (shouldTrackDomEvent(target, e)) {
-            var targetElementList = [target];
-            var curEl = target;
-            while (curEl.parentNode && !isTag(curEl, 'body')) {
-                targetElementList.push(curEl.parentNode);
-                curEl = curEl.parentNode;
-            }
-
-            var elementsJson = [];
-            var href, explicitNoTrack = false;
-            _.each(targetElementList, function(el) {
-                var shouldTrackEl = shouldTrackElement(el);
-
-                // if the element or a parent element is an anchor tag
-                // include the href as a property
-                if (el.tagName.toLowerCase() === 'a') {
-                    href = el.getAttribute('href');
-                    href = shouldTrackEl && shouldTrackValue(href) && href;
-                }
-
-                // allow users to programatically prevent tracking of elements by adding class 'mp-no-track'
-                var classes = getClassName(el).split(' ');
-                if (_.includes(classes, 'mp-no-track')) {
-                    explicitNoTrack = true;
-                }
-
-                elementsJson.push(this._getPropertiesFromElement(el));
-            }, this);
-
-            if (explicitNoTrack) {
-                return false;
-            }
-
-            // only populate text content from target element (not parents)
-            // to prevent text within a sensitive element from being collected
-            // as part of a parent's el.textContent
-            var elementText;
-            var safeElementText = getSafeText(target);
-            if (safeElementText && safeElementText.length) {
-                elementText = safeElementText;
-            }
-
-            var props = _.extend(
-                this._getDefaultProperties(e.type),
-                {
-                    '$elements':  elementsJson,
-                    '$el_attr__href': href,
-                    '$el_text': elementText
-                },
-                this._getCustomProperties(targetElementList)
-            );
-
-            instance.track('$web_event', props);
-            return true;
-        }
-    },
-
-    // only reason is to stub for unit tests
-    // since you can't override window.location props
-    _navigate: function(href) {
-        window.location.href = href;
-    },
-
-    _addDomEventHandlers: function(instance) {
-        var handler = _.bind(function(e) {
-            e = e || window.event;
-            this._trackEvent(e, instance);
-        }, this);
-        _.register_event(document, 'submit', handler, false, true);
-        _.register_event(document, 'change', handler, false, true);
-        _.register_event(document, 'click', handler, false, true);
-    },
-
-    _customProperties: {},
-    init: function(instance) {
-        if (!(document && document.body)) {
-            console.log('document not ready yet, trying again in 500 milliseconds...');
-            var that = this;
-            setTimeout(function() { that.init(instance); }, 500);
-            return;
-        }
-
-        var token = instance.get_config('token');
-        if (this._initializedTokens.indexOf(token) > -1) {
-            console.log('autotrack already initialized for token "' + token + '"');
-            return;
-        }
-        this._initializedTokens.push(token);
-
-        if (!this._maybeLoadEditor(instance)) { // don't autotrack actions when the editor is enabled
-            var parseDecideResponse = _.bind(function(response) {
-                if (response && response['config'] && response['config']['enable_collect_everything'] === true) {
-
-                    if (response['custom_properties']) {
-                        this._customProperties = response['custom_properties'];
-                    }
-
-                    instance.track('$web_event', _.extend({
-                        '$title': document.title
-                    }, this._getDefaultProperties('pageview')));
-
-                    this._addDomEventHandlers(instance);
-
-                } else {
-                    instance['__autotrack_enabled'] = false;
-                }
-            }, this);
-
-            instance._send_request(
-                instance.get_config('api_host') + '/decide/', {
-                    'verbose': true,
-                    'version': '1',
-                    'lib': 'web',
-                    'token': token
-                },
-                instance._prepare_callback(parseDecideResponse)
-            );
-        }
-    },
-
-    _editorParamsFromHash: function(instance, hash) {
-        var editorParams;
-        try {
-            var state = _.getHashParam(hash, 'state');
-            state = JSON.parse(decodeURIComponent(state));
-            var expiresInSeconds = _.getHashParam(hash, 'expires_in');
-            editorParams = {
-                'accessToken': _.getHashParam(hash, 'access_token'),
-                'accessTokenExpiresAt': (new Date()).getTime() + (Number(expiresInSeconds) * 1000),
-                'bookmarkletMode': !!state['bookmarkletMode'],
-                'projectId': state['projectId'],
-                'projectOwnerId': state['projectOwnerId'],
-                'projectToken': state['token'],
-                'readOnly': state['readOnly'],
-                'userFlags': state['userFlags'],
-                'userId': state['userId']
-            };
-            window.sessionStorage.setItem('editorParams', JSON.stringify(editorParams));
-
-            if (state['desiredHash']) {
-                window.location.hash = state['desiredHash'];
-            } else if (window.history) {
-                history.replaceState('', document.title, window.location.pathname + window.location.search); // completely remove hash
-            } else {
-                window.location.hash = ''; // clear hash (but leaves # unfortunately)
-            }
-        } catch (e) {
-            console.error('Unable to parse data from hash', e);
-        }
-        return editorParams;
-    },
-
-    /**
-     * To load the visual editor, we need an access token and other state. That state comes from one of three places:
-     * 1. In the URL hash params if the customer is using an old snippet
-     * 2. From session storage under the key `_mpcehash` if the snippet already parsed the hash
-     * 3. From session storage under the key `editorParams` if the editor was initialized on a previous page
-     */
-    _maybeLoadEditor: function(instance) {
-        try {
-            var parseFromUrl = false;
-            if (_.getHashParam(window.location.hash, 'state')) {
-                var state = _.getHashParam(window.location.hash, 'state');
-                state = JSON.parse(decodeURIComponent(state));
-                parseFromUrl = state['action'] === 'mpeditor';
-            }
-            var parseFromStorage = !!window.sessionStorage.getItem('_mpcehash');
-            var editorParams;
-
-            if (parseFromUrl) { // happens if they are initializing the editor using an old snippet
-                editorParams = this._editorParamsFromHash(instance, window.location.hash);
-            } else if (parseFromStorage) { // happens if they are initialized the editor and using the new snippet
-                editorParams = this._editorParamsFromHash(instance, window.sessionStorage.getItem('_mpcehash'));
-                window.sessionStorage.removeItem('_mpcehash');
-            } else { // get credentials from sessionStorage from a previous initialzation
-                editorParams = JSON.parse(window.sessionStorage.getItem('editorParams') || '{}');
-            }
-
-            if (editorParams['projectToken'] && instance.get_config('token') === editorParams['projectToken']) {
-                this._loadEditor(instance, editorParams);
-                return true;
-            } else {
-                return false;
-            }
-        } catch (e) {
-            return false;
-        }
-    },
-
-    _loadEditor: function(instance, editorParams) {
-        if (!window['_mpEditorLoaded']) { // only load the codeless event editor once, even if there are multiple instances of MixpanelLib
-            window['_mpEditorLoaded'] = true;
-            var editorUrl = instance.get_config('app_host')
-              + '/js-bundle/reports/collect-everything/editor.js?_ts='
-              + (new Date()).getTime();
-            this._loadScript(editorUrl, function() {
-                window['mp_load_editor'](editorParams);
-            });
-            return true;
-        }
-        return false;
-    },
-
-    // this is a mechanism to ramp up CE with no server-side interaction.
-    // when CE is active, every page load results in a decide request. we
-    // need to gently ramp this up so we don't overload decide. this decides
-    // deterministically if CE is enabled for this project by modding the char
-    // value of the project token.
-    enabledForProject: function(token, numBuckets, numEnabledBuckets) {
-        numBuckets = !_.isUndefined(numBuckets) ? numBuckets : 10;
-        numEnabledBuckets = !_.isUndefined(numEnabledBuckets) ? numEnabledBuckets : 10;
-        var charCodeSum = 0;
-        for (var i = 0; i < token.length; i++) {
-            charCodeSum += token.charCodeAt(i);
-        }
-        return (charCodeSum % numBuckets) < numEnabledBuckets;
-    },
-
-    isBrowserSupported: function() {
-        return _.isFunction(document.querySelectorAll);
-    }
-};
-
-_.bind_instance_methods(autotrack);
-_.safewrap_instance_methods(autotrack);
-
-/**
- * A function used to track a Mixpanel event (e.g. MixpanelLib.track)
- * @callback trackFunction
- * @param {String} event_name The name of the event. This can be anything the user does - 'Button Click', 'Sign Up', 'Item Purchased', etc.
- * @param {Object} [properties] A set of properties to include with the event you're sending. These describe the user who did the event or details about the event itself.
- * @param {Function} [callback] If provided, the callback function will be called after tracking the event.
- */
-
-/** Public **/
-
-var GDPR_DEFAULT_PERSISTENCE_PREFIX = '__mp_opt_in_out_';
-
-/**
- * Opt the user in to data tracking and cookies/localstorage for the given token
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {trackFunction} [options.track] - function used for tracking a Mixpanel event to record the opt-in action
- * @param {string} [options.trackEventName] - event name to be used for tracking the opt-in action
- * @param {Object} [options.trackProperties] - set of properties to be tracked along with the opt-in action
- * @param {string} [options.persistenceType] Persistence mechanism used - cookie or localStorage
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookieExpiration] - number of days until the opt-in cookie expires
- * @param {boolean} [options.crossSubdomainCookie] - whether the opt-in cookie is set as cross-subdomain or not
- * @param {boolean} [options.secureCookie] - whether the opt-in cookie is set as secure or not
- */
-function optIn(token, options) {
-    _optInOut(true, token, options);
-}
-
-/**
- * Opt the user out of data tracking and cookies/localstorage for the given token
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistenceType] Persistence mechanism used - cookie or localStorage
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookieExpiration] - number of days until the opt-out cookie expires
- * @param {boolean} [options.crossSubdomainCookie] - whether the opt-out cookie is set as cross-subdomain or not
- * @param {boolean} [options.secureCookie] - whether the opt-out cookie is set as secure or not
- */
-function optOut(token, options) {
-    _optInOut(false, token, options);
-}
-
-/**
- * Check whether the user has opted in to data tracking and cookies/localstorage for the given token
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistenceType] Persistence mechanism used - cookie or localStorage
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @returns {boolean} whether the user has opted in to the given opt type
- */
-function hasOptedIn(token, options) {
-    return _getStorageValue(token, options) === '1';
-}
-
-/**
- * Check whether the user has opted out of data tracking and cookies/localstorage for the given token
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistenceType] Persistence mechanism used - cookie or localStorage
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @returns {boolean} whether the user has opted out of the given opt type
- */
-function hasOptedOut(token, options) {
-    if (_hasDoNotTrackFlagOn()) {
-        return true;
-    }
-    return _getStorageValue(token, options) === '0';
-}
-
-/**
- * Wrap a MixpanelLib method with a check for whether the user is opted out of data tracking and cookies/localstorage for the given token
- * If the user has opted out, return early instead of executing the method.
- * If a callback argument was provided, execute it passing the 0 error code.
- * @param {function} method - wrapped method to be executed if the user has not opted out
- * @returns {*} the result of executing method OR undefined if the user has opted out
- */
-function addOptOutCheckMixpanelLib(method) {
-    return _addOptOutCheck(method, function(name) {
-        return this.get_config(name);
-    });
-}
-
-/**
- * Wrap a MixpanelPeople method with a check for whether the user is opted out of data tracking and cookies/localstorage for the given token
- * If the user has opted out, return early instead of executing the method.
- * If a callback argument was provided, execute it passing the 0 error code.
- * @param {function} method - wrapped method to be executed if the user has not opted out
- * @returns {*} the result of executing method OR undefined if the user has opted out
- */
-function addOptOutCheckMixpanelPeople(method) {
-    return _addOptOutCheck(method, function(name) {
-        return this._get_config(name);
-    });
-}
-
-/**
- * Clear the user's opt in/out status of data tracking and cookies/localstorage for the given token
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistenceType] Persistence mechanism used - cookie or localStorage
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookieExpiration] - number of days until the opt-in cookie expires
- * @param {boolean} [options.crossSubdomainCookie] - whether the opt-in cookie is set as cross-subdomain or not
- * @param {boolean} [options.secureCookie] - whether the opt-in cookie is set as secure or not
- */
-function clearOptInOut(token, options) {
-    options = options || {};
-    _getStorage(options).remove(_getStorageKey(token, options), !!options.crossSubdomainCookie);
-}
-
-/** Private **/
-
-/**
- * Get storage util
- * @param {Object} [options]
- * @param {string} [options.persistenceType]
- * @returns {object} either _.cookie or _.localstorage
- */
-function _getStorage(options) {
-    options = options || {};
-    return options.persistenceType === 'localStorage' ? _.localStorage : _.cookie;
-}
-
-/**
- * Get the name of the cookie that is used for the given opt type (tracking, cookie, etc.)
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @returns {string} the name of the cookie for the given opt type
- */
-function _getStorageKey(token, options) {
-    options = options || {};
-    return (options.persistencePrefix || GDPR_DEFAULT_PERSISTENCE_PREFIX) + token;
-}
-
-/**
- * Get the value of the cookie that is used for the given opt type (tracking, cookie, etc.)
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @returns {string} the value of the cookie for the given opt type
- */
-function _getStorageValue(token, options) {
-    return _getStorage(options).get(_getStorageKey(token, options));
-}
-
-/**
- * Check whether the user has set the DNT/doNotTrack setting to true in their browser
- * @returns {boolean} whether the DNT setting is true
- */
-function _hasDoNotTrackFlagOn() {
-    return !!(window$1.navigator && window$1.navigator.doNotTrack === '1');
-}
-
-/**
- * Set cookie/localstorage for the user indicating that they are opted in or out for the given opt type
- * @param {boolean} optValue - whether to opt the user in or out for the given opt type
- * @param {string} token - Mixpanel project tracking token
- * @param {Object} [options]
- * @param {trackFunction} [options.track] - function used for tracking a Mixpanel event to record the opt-in action
- * @param {string} [options.trackEventName] - event name to be used for tracking the opt-in action
- * @param {Object} [options.trackProperties] - set of properties to be tracked along with the opt-in action
- * @param {string} [options.persistencePrefix=__mp_opt_in_out] - custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookieExpiration] - number of days until the opt-in cookie expires
- * @param {boolean} [options.crossSubdomainCookie] - whether the opt-in cookie is set as cross-subdomain or not
- * @param {boolean} [options.secureCookie] - whether the opt-in cookie is set as secure or not
- */
-function _optInOut(optValue, token, options) {
-    if (!_.isString(token) || !token.length) {
-        console.error('gdpr.' + (optValue ? 'optIn' : 'optOut') + ' called with an invalid token');
-        return;
-    }
-
-    options = options || {};
-
-    _getStorage(options).set(
-        _getStorageKey(token, options),
-        optValue ? 1 : 0,
-        _.isNumber(options.cookieExpiration) ? options.cookieExpiration : null,
-        !!options.crossSubdomainCookie,
-        !!options.secureCookie
-    );
-
-    if (options.track && optValue) { // only track event if opting in (optValue=true)
-        options.track(options.trackEventName || '$opt_in', options.trackProperties);
-    }
-}
-
-/**
- * Wrap a method with a check for whether the user is opted out of data tracking and cookies/localstorage for the given token
- * If the user has opted out, return early instead of executing the method.
- * If a callback argument was provided, execute it passing the 0 error code.
- * @param {function} method - wrapped method to be executed if the user has not opted out
- * @param {function} getConfigValue - getter function for the Mixpanel API token and other options to be used with opt-out check
- * @returns {*} the result of executing method OR undefined if the user has opted out
- */
-function _addOptOutCheck(method, getConfigValue) {
-    return function() {
-        var optedOut = false;
-
-        try {
-            var token = getConfigValue.call(this, 'token');
-            var persistenceType = getConfigValue.call(this, 'opt_out_tracking_persistence_type');
-            var persistencePrefix = getConfigValue.call(this, 'opt_out_tracking_cookie_prefix');
-
-            if (token) { // if there was an issue getting the token, continue method execution as normal
-                optedOut = hasOptedOut(token, {
-                    persistenceType: persistenceType,
-                    persistencePrefix: persistencePrefix
-                });
-            }
-        } catch(err) {
-            console.error('Unexpected error when checking tracking opt-out status: ' + err);
-        }
-
-        if (!optedOut) {
-            return method.apply(this, arguments);
-        }
-
-        var callback = arguments[arguments.length - 1];
-        if (typeof(callback) === 'function') {
-            callback(0);
-        }
-
-        return;
-    };
-}
-
-/*
- * Mixpanel JS Library
- *
- * Copyright 2012, Mixpanel, Inc. All Rights Reserved
- * http://mixpanel.com/
- *
- * Includes portions of Underscore.js
- * http://documentcloud.github.com/underscore/
- * (c) 2011 Jeremy Ashkenas, DocumentCloud Inc.
- * Released under the MIT License.
- */
 
 // ==ClosureCompiler==
 // @compilation_level ADVANCED_OPTIMIZATIONS
@@ -2436,7 +1663,7 @@ var INIT_SNIPPET = 1;
  */
     // http://hacks.mozilla.org/2009/07/cross-site-xmlhttprequest-with-cors/
     // https://developer.mozilla.org/en-US/docs/DOM/XMLHttpRequest#withCredentials
-var USE_XHR = (window$1.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
+var USE_XHR = (win.XMLHttpRequest && 'withCredentials' in new XMLHttpRequest());
 
     // IE<10 does not support cross-origin XHR's but script tags
     // with defer won't block window.onload; ENQUEUE_REQUESTS
@@ -2470,162 +1697,11 @@ var DEFAULT_CONFIG = {
     'disable_cookie':                    false,
     'secure_cookie':                     false,
     'ip':                                true,
-    'opt_out_tracking_by_default':       false,
-    'opt_out_tracking_persistence_type': 'localStorage',
-    'opt_out_tracking_cookie_prefix':    null,
     'property_blacklist':                [],
     'xhr_headers':                       {} // { header: value, header2: value }
 };
 
 var DOM_LOADED = false;
-
-/**
- * DomTracker Object
- * @constructor
- */
-var DomTracker = function() {};
-
-// interface
-DomTracker.prototype.create_properties = function() {};
-DomTracker.prototype.event_handler = function() {};
-DomTracker.prototype.after_track_handler = function() {};
-
-DomTracker.prototype.init = function(mixpanel_instance) {
-    this.mp = mixpanel_instance;
-    return this;
-};
-
-/**
- * @param {Object|string} query
- * @param {string} event_name
- * @param {Object=} properties
- * @param {function(...[*])=} user_callback
- */
-DomTracker.prototype.track = function(query, event_name, properties, user_callback) {
-    var that = this;
-    var elements = _.dom_query(query);
-
-    if (elements.length === 0) {
-        console$1.error('The DOM query (' + query + ') returned 0 elements');
-        return;
-    }
-
-    _.each(elements, function(element) {
-        _.register_event(element, this.override_event, function(e) {
-            var options = {};
-            var props = that.create_properties(properties, this);
-            var timeout = that.mp.get_config('track_links_timeout');
-
-            that.event_handler(e, this, options);
-
-            // in case the mixpanel servers don't get back to us in time
-            window$1.setTimeout(that.track_callback(user_callback, props, options, true), timeout);
-
-            // fire the tracking event
-            that.mp.track(event_name, props, that.track_callback(user_callback, props, options));
-        });
-    }, this);
-
-    return true;
-};
-
-/**
- * @param {function(...[*])} user_callback
- * @param {Object} props
- * @param {boolean=} timeout_occured
- */
-DomTracker.prototype.track_callback = function(user_callback, props, options, timeout_occured) {
-    timeout_occured = timeout_occured || false;
-    var that = this;
-
-    return function() {
-        // options is referenced from both callbacks, so we can have
-        // a 'lock' of sorts to ensure only one fires
-        if (options.callback_fired) { return; }
-        options.callback_fired = true;
-
-        if (user_callback && user_callback(timeout_occured, props) === false) {
-            // user can prevent the default functionality by
-            // returning false from their callback
-            return;
-        }
-
-        that.after_track_handler(props, options, timeout_occured);
-    };
-};
-
-DomTracker.prototype.create_properties = function(properties, element) {
-    var props;
-
-    if (typeof(properties) === 'function') {
-        props = properties(element);
-    } else {
-        props = _.extend({}, properties);
-    }
-
-    return props;
-};
-
-/**
- * LinkTracker Object
- * @constructor
- * @extends DomTracker
- */
-var LinkTracker = function() {
-    this.override_event = 'click';
-};
-_.inherit(LinkTracker, DomTracker);
-
-LinkTracker.prototype.create_properties = function(properties, element) {
-    var props = LinkTracker.superclass.create_properties.apply(this, arguments);
-
-    if (element.href) { props['url'] = element.href; }
-
-    return props;
-};
-
-LinkTracker.prototype.event_handler = function(evt, element, options) {
-    options.new_tab = (
-        evt.which === 2 ||
-        evt.metaKey ||
-        evt.ctrlKey ||
-        element.target === '_blank'
-    );
-    options.href = element.href;
-
-    if (!options.new_tab) {
-        evt.preventDefault();
-    }
-};
-
-LinkTracker.prototype.after_track_handler = function(props, options) {
-    if (options.new_tab) { return; }
-
-    setTimeout(function() {
-        window$1.location = options.href;
-    }, 0);
-};
-
-/**
- * FormTracker Object
- * @constructor
- * @extends DomTracker
- */
-var FormTracker = function() {
-    this.override_event = 'submit';
-};
-_.inherit(FormTracker, DomTracker);
-
-FormTracker.prototype.event_handler = function(evt, element, options) {
-    options.element = element;
-    evt.preventDefault();
-};
-
-FormTracker.prototype.after_track_handler = function(props, options) {
-    setTimeout(function() {
-        options.element.submit();
-    }, 0);
-};
 
 /**
  * Mixpanel Persistence Object
@@ -2643,7 +1719,7 @@ var MixpanelPersistence = function(config) {
 
     var storage_type = config['persistence'];
     if (storage_type !== 'cookie' && storage_type !== 'localStorage') {
-        console$1.critical('Unknown persistence type ' + storage_type + '; falling back to cookie');
+        console.critical('Unknown persistence type ' + storage_type + '; falling back to cookie');
         storage_type = config['persistence'] = 'cookie';
     }
 
@@ -2977,8 +2053,8 @@ MixpanelPersistence.prototype._add_to_people_queue = function(queue, data) {
         this._pop_from_people_queue(UNSET_ACTION, q_data);
     }
 
-    console$1.log('MIXPANEL PEOPLE REQUEST (QUEUED, PENDING IDENTIFY):');
-    console$1.log(data);
+    console.log('MIXPANEL PEOPLE REQUEST (QUEUED, PENDING IDENTIFY):');
+    console.log(data);
 
     this.save();
 };
@@ -3008,7 +2084,7 @@ MixpanelPersistence.prototype._get_queue_key = function(queue) {
     } else if (queue === UNION_ACTION) {
         return UNION_QUEUE_KEY;
     } else {
-        console$1.error('Invalid queue:', queue);
+        console.error('Invalid queue:', queue);
     }
 };
 
@@ -3051,8 +2127,6 @@ var MixpanelLib = function() {};
  */
 var MixpanelPeople = function() {};
 
-var MPNotif;
-
 /**
  * create_mplib(token:string, config:object, name:string)
  *
@@ -3069,7 +2143,7 @@ var create_mplib = function(token, config, name) {
         instance = target;
     } else {
         if (target && !_.isArray(target)) {
-            console$1.error('You have already initialized ' + name);
+            console.error('You have already initialized ' + name);
             return;
         }
         instance = new MixpanelLib();
@@ -3083,21 +2157,6 @@ var create_mplib = function(token, config, name) {
     // if any instance on the page has debug = true, we set the
     // global debug to be true
     Config.DEBUG = Config.DEBUG || instance.get_config('debug');
-
-    instance['__autotrack_enabled'] = instance.get_config('autotrack');
-    if (instance.get_config('autotrack')) {
-        var num_buckets = 100;
-        var num_enabled_buckets = 100;
-        if (!autotrack.enabledForProject(instance.get_config('token'), num_buckets, num_enabled_buckets)) {
-            instance['__autotrack_enabled'] = false;
-            console$1.log('Not in active bucket: disabling Automatic Event Collection.');
-        } else if (!autotrack.isBrowserSupported()) {
-            instance['__autotrack_enabled'] = false;
-            console$1.log('Disabling Automatic Event Collection because this browser is not supported');
-        } else {
-            autotrack.init(instance);
-        }
-    }
 
     // if target is not defined, we called init after the lib already
     // loaded, so there won't be an array of things to execute
@@ -3131,11 +2190,11 @@ var create_mplib = function(token, config, name) {
  */
 MixpanelLib.prototype.init = function (token, config, name) {
     if (_.isUndefined(name)) {
-        console$1.error('You must name your new library: init(token, config, name)');
+        console.error('You must name your new library: init(token, config, name)');
         return;
     }
     if (name === PRIMARY_INSTANCE_NAME) {
-        console$1.error('You must initialize the main mixpanel object right after you include the Mixpanel js snippet');
+        console.error('You must initialize the main mixpanel object right after you include the Mixpanel js snippet');
         return;
     }
 
@@ -3181,13 +2240,6 @@ MixpanelLib.prototype._init = function(token, config, name) {
 
 // Private methods
 
-MixpanelLib.prototype._update_persistence = function() {
-    var disablePersistence = this.get_config('disable_persistence') || this.has_opted_out_tracking();
-    if (this['persistence'].disabled !== disablePersistence) {
-        this['persistence'].set_disabled(disablePersistence);
-    }
-};
-
 MixpanelLib.prototype._loaded = function() {
     this.get_config('loaded')(this);
 
@@ -3215,7 +2267,7 @@ MixpanelLib.prototype._dom_loaded = function() {
 
 MixpanelLib.prototype._track_dom = function(DomClass, args) {
     if (this.get_config('img')) {
-        console$1.error('You can\'t use DOM tracking functions with img = true.');
+        console.error('You can\'t use DOM tracking functions with img = true.');
         return false;
     }
 
@@ -3292,9 +2344,9 @@ MixpanelLib.prototype._send_request = function(url, data, callback) {
     url += '?' + _.HTTPBuildQuery(data);
 
     if ('img' in data) {
-        var img = document$1.createElement('img');
+        var img = document.createElement('img');
         img.src = url;
-        document$1.body.appendChild(img);
+        document.body.appendChild(img);
     } else if (USE_XHR) {
         try {
             var req = new XMLHttpRequest();
@@ -3317,7 +2369,7 @@ MixpanelLib.prototype._send_request = function(url, data, callback) {
                                 try {
                                     response = _.JSONDecode(req.responseText);
                                 } catch (e) {
-                                    console$1.error(e);
+                                    console.error(e);
                                     return;
                                 }
                                 callback(response);
@@ -3327,7 +2379,7 @@ MixpanelLib.prototype._send_request = function(url, data, callback) {
                         }
                     } else {
                         var error = 'Bad HTTP status: ' + req.status + ' ' + req.statusText;
-                        console$1.error(error);
+                        console.error(error);
                         if (callback) {
                             if (verbose_mode) {
                                 callback({status: 0, error: error});
@@ -3340,15 +2392,15 @@ MixpanelLib.prototype._send_request = function(url, data, callback) {
             };
             req.send(null);
         } catch (e) {
-            console$1.error(e);
+            console.error(e);
         }
     } else {
-        var script = document$1.createElement('script');
+        var script = document.createElement('script');
         script.type = 'text/javascript';
         script.async = true;
         script.defer = true;
         script.src = url;
-        var s = document$1.getElementsByTagName('script')[0];
+        var s = document.getElementsByTagName('script')[0];
         s.parentNode.insertBefore(script, s);
     }
 };
@@ -3394,41 +2446,6 @@ MixpanelLib.prototype._execute_array = function(array) {
 };
 
 /**
- * push() keeps the standard async-array-push
- * behavior around after the lib is loaded.
- * This is only useful for external integrations that
- * do not wish to rely on our convenience methods
- * (created in the snippet).
- *
- * ### Usage:
- *     mixpanel.push(['register', { a: 'b' }]);
- *
- * @param {Array} item A [function_name, args...] array to be executed
- */
-MixpanelLib.prototype.push = function(item) {
-    this._execute_array([item]);
-};
-
-/**
- * Disable events on the Mixpanel object. If passed no arguments,
- * this function disables tracking of any event. If passed an
- * array of event names, those events will be disabled, but other
- * events will continue to be tracked.
- *
- * Note: this function does not stop other mixpanel functions from
- * firing, such as register() or people.set().
- *
- * @param {Array} [events] An array of event names to disable
- */
-MixpanelLib.prototype.disable = function(events) {
-    if (typeof(events) === 'undefined') {
-        this._flags.disable_all_events = true;
-    } else {
-        this.__disabled_events = this.__disabled_events.concat(events);
-    }
-};
-
-/**
  * Track an event. This is the most important and
  * frequently used Mixpanel function.
  *
@@ -3443,13 +2460,13 @@ MixpanelLib.prototype.disable = function(events) {
  * @param {Object} [properties] A set of properties to include with the event you're sending. These describe the user who did the event or details about the event itself.
  * @param {Function} [callback] If provided, the callback function will be called after tracking the event.
  */
-MixpanelLib.prototype.track = addOptOutCheckMixpanelLib(function(event_name, properties, callback) {
+MixpanelLib.prototype.track = function(event_name, properties, callback) {
     if (typeof(callback) !== 'function') {
         callback = function() {};
     }
 
     if (_.isUndefined(event_name)) {
-        console$1.error('No event name provided to mixpanel.track');
+        console.error('No event name provided to mixpanel.track');
         return;
     }
 
@@ -3470,10 +2487,10 @@ MixpanelLib.prototype.track = addOptOutCheckMixpanelLib(function(event_name, pro
     }
 
     // update persistence
-    this['persistence'].update_search_keyword(document$1.referrer);
+    this['persistence'].update_search_keyword(document.referrer);
 
     if (this.get_config('store_google')) { this['persistence'].update_campaign_params(); }
-    if (this.get_config('save_referrer')) { this['persistence'].update_referrer_info(document$1.referrer); }
+    if (this.get_config('save_referrer')) { this['persistence'].update_referrer_info(document.referrer); }
 
     // note: extend writes to the first object, so lets make sure we
     // don't write to the persistence properties object and info
@@ -3493,7 +2510,7 @@ MixpanelLib.prototype.track = addOptOutCheckMixpanelLib(function(event_name, pro
             delete properties[blacklisted_prop];
         });
     } else {
-        console$1.error('Invalid value for property_blacklist config: ' + property_blacklist);
+        console.error('Invalid value for property_blacklist config: ' + property_blacklist);
     }
 
     var data = {
@@ -3505,8 +2522,8 @@ MixpanelLib.prototype.track = addOptOutCheckMixpanelLib(function(event_name, pro
     var json_data      = _.JSONEncode(truncated_data);
     var encoded_data   = _.base64Encode(json_data);
 
-    console$1.log('MIXPANEL REQUEST:');
-    console$1.log(truncated_data);
+    console.log('MIXPANEL REQUEST:');
+    console.log(truncated_data);
 
     this._send_request(
         this.get_config('api_host') + '/track/',
@@ -3515,114 +2532,6 @@ MixpanelLib.prototype.track = addOptOutCheckMixpanelLib(function(event_name, pro
     );
 
     return truncated_data;
-});
-
-/**
- * Track a page view event, which is currently ignored by the server.
- * This function is called by default on page load unless the
- * track_pageview configuration variable is false.
- *
- * @param {String} [page] The url of the page to record. If you don't include this, it defaults to the current url.
- * @api private
- */
-MixpanelLib.prototype.track_pageview = function(page) {
-    if (_.isUndefined(page)) {
-        page = document$1.location.href;
-    }
-    this.track('mp_page_view', _.info.pageviewInfo(page));
-};
-
-/**
- * Track clicks on a set of document elements. Selector must be a
- * valid query. Elements must exist on the page at the time track_links is called.
- *
- * ### Usage:
- *
- *     // track click for link id #nav
- *     mixpanel.track_links('#nav', 'Clicked Nav Link');
- *
- * ### Notes:
- *
- * This function will wait up to 300 ms for the Mixpanel
- * servers to respond. If they have not responded by that time
- * it will head to the link without ensuring that your event
- * has been tracked.  To configure this timeout please see the
- * set_config() documentation below.
- *
- * If you pass a function in as the properties argument, the
- * function will receive the DOMElement that triggered the
- * event as an argument.  You are expected to return an object
- * from the function; any properties defined on this object
- * will be sent to mixpanel as event properties.
- *
- * @type {Function}
- * @param {Object|String} query A valid DOM query, element or jQuery-esque list
- * @param {String} event_name The name of the event to track
- * @param {Object|Function} [properties] A properties object or function that returns a dictionary of properties when passed a DOMElement
- */
-MixpanelLib.prototype.track_links = function() {
-    return this._track_dom.call(this, LinkTracker, arguments);
-};
-
-/**
- * Track form submissions. Selector must be a valid query.
- *
- * ### Usage:
- *
- *     // track submission for form id 'register'
- *     mixpanel.track_forms('#register', 'Created Account');
- *
- * ### Notes:
- *
- * This function will wait up to 300 ms for the mixpanel
- * servers to respond, if they have not responded by that time
- * it will head to the link without ensuring that your event
- * has been tracked.  To configure this timeout please see the
- * set_config() documentation below.
- *
- * If you pass a function in as the properties argument, the
- * function will receive the DOMElement that triggered the
- * event as an argument.  You are expected to return an object
- * from the function; any properties defined on this object
- * will be sent to mixpanel as event properties.
- *
- * @type {Function}
- * @param {Object|String} query A valid DOM query, element or jQuery-esque list
- * @param {String} event_name The name of the event to track
- * @param {Object|Function} [properties] This can be a set of properties, or a function that returns a set of properties after being passed a DOMElement
- */
-MixpanelLib.prototype.track_forms = function() {
-    return this._track_dom.call(this, FormTracker, arguments);
-};
-
-/**
- * Time an event by including the time between this call and a
- * later 'track' call for the same event in the properties sent
- * with the event.
- *
- * ### Usage:
- *
- *     // time an event named 'Registered'
- *     mixpanel.time_event('Registered');
- *     mixpanel.track('Registered', {'Gender': 'Male', 'Age': 21});
- *
- * When called for a particular event name, the next track call for that event
- * name will include the elapsed time between the 'time_event' and 'track'
- * calls. This value is stored as seconds in the '$duration' property.
- *
- * @param {String} event_name The name of the event.
- */
-MixpanelLib.prototype.time_event = function(event_name) {
-    if (_.isUndefined(event_name)) {
-        console$1.error('No event name provided to mixpanel.time_event');
-        return;
-    }
-
-    if (this._event_is_disabled(event_name)) {
-        return;
-    }
-
-    this['persistence'].set_event_timer(event_name,  new Date().getTime());
 };
 
 /**
@@ -3793,7 +2702,7 @@ MixpanelLib.prototype.alias = function(alias, original) {
     // mixpanel.people.identify() call made for this user. It is VERY BAD to make an alias with
     // this ID, as it will duplicate users.
     if (alias === this.get_property(PEOPLE_DISTINCT_ID_KEY)) {
-        console$1.critical('Attempting to create alias for existing People user - aborting.');
+        console.critical('Attempting to create alias for existing People user - aborting.');
         return -2;
     }
 
@@ -3808,25 +2717,10 @@ MixpanelLib.prototype.alias = function(alias, original) {
             _this.identify(alias);
         });
     } else {
-        console$1.error('alias matches current distinct_id - skipping api call.');
+        console.error('alias matches current distinct_id - skipping api call.');
         this.identify(alias);
         return -1;
     }
-};
-
-/**
- * Provide a string to recognize the user by. The string passed to
- * this method will appear in the Mixpanel Streams product rather
- * than an automatically generated name. Name tags do not have to
- * be unique.
- *
- * This value will only be included in Streams data.
- *
- * @param {String} name_tag A human readable name for the user
- * @api private
- */
-MixpanelLib.prototype.name_tag = function(name_tag) {
-    this._register_single('mp_name_tag', name_tag);
 };
 
 /**
@@ -3949,1982 +2843,27 @@ MixpanelLib.prototype.get_property = function(property_name) {
     return this['persistence']['props'][property_name];
 };
 
-MixpanelLib.prototype.toString = function() {
-    var name = this.get_config('name');
-    if (name !== PRIMARY_INSTANCE_NAME) {
-        name = PRIMARY_INSTANCE_NAME + '.' + name;
-    }
-    return name;
-};
-
 MixpanelLib.prototype._event_is_disabled = function(event_name) {
     return _.isBlockedUA(userAgent) ||
         this._flags.disable_all_events ||
         _.include(this.__disabled_events, event_name);
 };
 
-MixpanelLib.prototype._check_and_handle_notifications = addOptOutCheckMixpanelLib(function(distinct_id) {
-    if (
-        !distinct_id ||
-        this._flags.identify_called ||
-        this.get_config('disable_notifications')
-    ) {
-        return;
-    }
-
-    console$1.log('MIXPANEL NOTIFICATION CHECK');
-
-    var data = {
-        'verbose':     true,
-        'version':     '2',
-        'lib':         'web',
-        'token':       this.get_config('token'),
-        'distinct_id': distinct_id
-    };
-    var self = this;
-    this._send_request(
-        this.get_config('api_host') + '/decide/',
-        data,
-        this._prepare_callback(function(r) {
-            if (r['notifications'] && r['notifications'].length > 0) {
-                self._show_notification.call(self, r['notifications'][0]);
-            }
-        })
-    );
-});
-
-MixpanelLib.prototype._show_notification = function(notification_data) {
-    var notification = new MPNotif(notification_data, this);
-    notification.show();
-};
-
-// perform some housekeeping around GDPR persistence of opt-in/out state
-MixpanelLib.prototype._init_gdpr_persistence = function() {
-    var is_localStorage_requested = this.get_config('opt_out_tracking_persistence_type') === 'localStorage';
-
-    // try to convert opt-in/out cookies to localStorage if possible
-    if (is_localStorage_requested && _.localStorage.is_supported()) {
-        if (!this.has_opted_in_tracking() && this.has_opted_in_tracking({'persistence_type': 'cookie'})) {
-            this.opt_in_tracking();
-        }
-        if (!this.has_opted_out_tracking() && this.has_opted_out_tracking({'persistence_type': 'cookie'})) {
-            this.opt_out_tracking();
-        }
-        this.clear_opt_in_out_tracking({'persistence_type': 'cookie'});
-    }
-
-    // check whether we should opt out by default and update persistence accordingly
-    if (this.get_config('opt_out_tracking_by_default') || _.cookie.get('mp_optout')) {
-        _.cookie.remove('mp_optout');
-        this.opt_out_tracking();
-    }
-    this._update_persistence();
-};
-
-// call a base gdpr function after constructing the appropriate token and options args
-MixpanelLib.prototype._call_gdpr_func = function(func, options) {
-    options = _.extend({
-        'track': _.bind(this.track, this),
-        'persistence_type': this.get_config('opt_out_tracking_persistence_type'),
-        'cookie_prefix': this.get_config('opt_out_tracking_cookie_prefix'),
-        'cookie_expiration': this.get_config('cookie_expiration'),
-        'cross_subdomain_cookie': this.get_config('cross_subdomain_cookie'),
-        'secure_cookie': this.get_config('secure_cookie')
-    }, options);
-
-    // check if localStorage can be used for recording opt out status, fall back to cookie if not
-    if (!_.localStorage.is_supported()) {
-        options['persistence_type'] = 'cookie';
-    }
-
-    return func(this.get_config('token'), {
-        track: options['track'],
-        trackEventName: options['track_event_name'],
-        trackProperties: options['track_properties'],
-        persistenceType: options['persistence_type'],
-        persistencePrefix: options['cookie_prefix'],
-        cookieExpiration: options['cookie_expiration'],
-        crossSubdomainCookie: options['cross_subdomain_cookie'],
-        secureCookie: options['secure_cookie']
-    });
-};
-
-/**
- * Opt the user in to data tracking and cookies/localstorage for this Mixpanel instance
- *
- * ### Usage
- *
- *     // opt user in
- *     mixpanel.opt_in_tracking();
- *
- *     // opt user in with specific event name, properties, cookie configuration
- *     mixpanel.opt_in_tracking({
- *         track_event_name: 'User opted in',
- *         track_event_properties: {
- *             'Email': 'jdoe@example.com'
- *         },
- *         cookie_expiration: 30,
- *         secure_cookie: true
- *     });
- *
- * @param {Object} [options] A dictionary of config options to override
- * @param {function} [options.track] Function used for tracking a Mixpanel event to record the opt-in action (default is this Mixpanel instance's track method)
- * @param {string} [options.track_event_name=$opt_in] Event name to be used for tracking the opt-in action
- * @param {Object} [options.track_properties] Set of properties to be tracked along with the opt-in action
- * @param {string} [options.persistence_type=localStorage] Persistence mechanism used - cookie or localStorage - falls back to cookie if localStorage is unavailable
- * @param {string} [options.cookie_prefix=__mp_opt_in_out] Custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookie_expiration] Number of days until the opt-in cookie expires (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.cross_subdomain_cookie] Whether the opt-in cookie is set as cross-subdomain or not (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.secure_cookie] Whether the opt-in cookie is set as secure or not (overrides value specified in this Mixpanel instance's config)
- */
-MixpanelLib.prototype.opt_in_tracking = function(options) {
-    this._call_gdpr_func(optIn, options);
-    this._update_persistence();
-};
-
-/**
- * Opt the user out of data tracking and cookies/localstorage for this Mixpanel instance
- *
- * ### Usage
- *
- *     // opt user out
- *     mixpanel.opt_out_tracking();
- *
- *     // opt user out with different cookie configuration from Mixpanel instance
- *     mixpanel.opt_out_tracking({
- *         cookie_expiration: 30,
- *         secure_cookie: true
- *     });
- *
- * @param {Object} [options] A dictionary of config options to override
- * @param {boolean} [options.delete_user=true] If true, will delete the currently identified user's profile and clear all charges after opting the user out
- * @param {string} [options.persistence_type=localStorage] Persistence mechanism used - cookie or localStorage - falls back to cookie if localStorage is unavailable
- * @param {string} [options.cookie_prefix=__mp_opt_in_out] Custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookie_expiration] Number of days until the opt-in cookie expires (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.cross_subdomain_cookie] Whether the opt-in cookie is set as cross-subdomain or not (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.secure_cookie] Whether the opt-in cookie is set as secure or not (overrides value specified in this Mixpanel instance's config)
- */
-MixpanelLib.prototype.opt_out_tracking = function(options) {
-    // delete use and clear charges since these methods may be disabled by opt-out
-    options = _.extend({'delete_user': true}, options);
-    if (options['delete_user'] && this['people'] && this['people']._identify_called()) {
-        this['people'].delete_user();
-        this['people'].clear_charges();
-    }
-
-    this._call_gdpr_func(optOut, options);
-    this._update_persistence();
-};
-
-/**
- * Check whether the user has opted in to data tracking and cookies/localstorage for this Mixpanel instance
- *
- * ### Usage
- *
- *     var has_opted_in = mixpanel.has_opted_in_tracking();
- *     // use has_opted_in value
- *
- * @param {Object} [options] A dictionary of config options to override
- * @param {string} [options.persistence_type=localStorage] Persistence mechanism used - cookie or localStorage - falls back to cookie if localStorage is unavailable
- * @param {string} [options.cookie_prefix=__mp_opt_in_out] Custom prefix to be used in the cookie/localstorage name
- * @returns {boolean} current opt-in status
- */
-MixpanelLib.prototype.has_opted_in_tracking = function(options) {
-    return this._call_gdpr_func(hasOptedIn, options);
-};
-
-/**
- * Check whether the user has opted out of data tracking and cookies/localstorage for this Mixpanel instance
- *
- * ### Usage
- *
- *     var has_opted_out = mixpanel.has_opted_out_tracking();
- *     // use has_opted_out value
- *
- * @param {Object} [options] A dictionary of config options to override
- * @param {string} [options.persistence_type=localStorage] Persistence mechanism used - cookie or localStorage - falls back to cookie if localStorage is unavailable
- * @param {string} [options.cookie_prefix=__mp_opt_in_out] Custom prefix to be used in the cookie/localstorage name
- * @returns {boolean} current opt-out status
- */
-MixpanelLib.prototype.has_opted_out_tracking = function(options) {
-    return this._call_gdpr_func(hasOptedOut, options);
-};
-
-/**
- * Clear the user's opt in/out status of data tracking and cookies/localstorage for this Mixpanel instance
- *
- * ### Usage
- *
- *     // clear user's opt-in/out status
- *     mixpanel.clear_opt_in_out_tracking();
- *
- *     // clear user's opt-in/out status with specific cookie configuration - should match
- *     // configuration used when opt_in_tracking/opt_out_tracking methods were called.
- *     mixpanel.clear_opt_in_out_tracking({
- *         cookie_expiration: 30,
- *         secure_cookie: true
- *     });
- *
- * @param {Object} [options] A dictionary of config options to override
- * @param {string} [options.persistence_type=localStorage] Persistence mechanism used - cookie or localStorage - falls back to cookie if localStorage is unavailable
- * @param {string} [options.cookie_prefix=__mp_opt_in_out] Custom prefix to be used in the cookie/localstorage name
- * @param {Number} [options.cookie_expiration] Number of days until the opt-in cookie expires (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.cross_subdomain_cookie] Whether the opt-in cookie is set as cross-subdomain or not (overrides value specified in this Mixpanel instance's config)
- * @param {boolean} [options.secure_cookie] Whether the opt-in cookie is set as secure or not (overrides value specified in this Mixpanel instance's config)
- */
-MixpanelLib.prototype.clear_opt_in_out_tracking = function(options) {
-    this._call_gdpr_func(clearOptInOut, options);
-    this._update_persistence();
-};
-
-
-MixpanelPeople.prototype._init = function(mixpanel_instance) {
-    this._mixpanel = mixpanel_instance;
-};
-
-/*
- * Set properties on a user record.
- *
- * ### Usage:
- *
- *     mixpanel.people.set('gender', 'm');
- *
- *     // or set multiple properties at once
- *     mixpanel.people.set({
- *         'Company': 'Acme',
- *         'Plan': 'Premium',
- *         'Upgrade date': new Date()
- *     });
- *     // properties can be strings, integers, dates, or lists
- *
- * @param {Object|String} prop If a string, this is the name of the property. If an object, this is an associative array of names and values.
- * @param {*} [to] A value to set on the given property name
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.set = addOptOutCheckMixpanelPeople(function(prop, to, callback) {
-    var data = {};
-    var $set = {};
-    if (_.isObject(prop)) {
-        _.each(prop, function(v, k) {
-            if (!this._is_reserved_property(k)) {
-                $set[k] = v;
-            }
-        }, this);
-        callback = to;
-    } else {
-        $set[prop] = to;
-    }
-
-    // make sure that the referrer info has been updated and saved
-    if (this._get_config('save_referrer')) {
-        this._mixpanel['persistence'].update_referrer_info(document$1.referrer);
-    }
-
-    // update $set object with default people properties
-    $set = _.extend(
-        {},
-        _.info.people_properties(),
-        this._mixpanel['persistence'].get_referrer_info(),
-        $set
-    );
-
-    data[SET_ACTION] = $set;
-
-    return this._send_request(data, callback);
-});
-
-/*
- * Set properties on a user record, only if they do not yet exist.
- * This will not overwrite previous people property values, unlike
- * people.set().
- *
- * ### Usage:
- *
- *     mixpanel.people.set_once('First Login Date', new Date());
- *
- *     // or set multiple properties at once
- *     mixpanel.people.set_once({
- *         'First Login Date': new Date(),
- *         'Starting Plan': 'Premium'
- *     });
- *
- *     // properties can be strings, integers or dates
- *
- * @param {Object|String} prop If a string, this is the name of the property. If an object, this is an associative array of names and values.
- * @param {*} [to] A value to set on the given property name
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.set_once = addOptOutCheckMixpanelPeople(function(prop, to, callback) {
-    var data = {};
-    var $set_once = {};
-    if (_.isObject(prop)) {
-        _.each(prop, function(v, k) {
-            if (!this._is_reserved_property(k)) {
-                $set_once[k] = v;
-            }
-        }, this);
-        callback = to;
-    } else {
-        $set_once[prop] = to;
-    }
-    data[SET_ONCE_ACTION] = $set_once;
-    return this._send_request(data, callback);
-});
-
-/*
- * Unset properties on a user record (permanently removes the properties and their values from a profile).
- *
- * ### Usage:
- *
- *     mixpanel.people.unset('gender');
- *
- *     // or unset multiple properties at once
- *     mixpanel.people.unset(['gender', 'Company']);
- *
- * @param {Array|String} prop If a string, this is the name of the property. If an array, this is a list of property names.
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.unset = function(prop, callback) {
-    var data = {};
-    var $unset = [];
-    if (!_.isArray(prop)) {
-        prop = [prop];
-    }
-
-    _.each(prop, function(k) {
-        if (!this._is_reserved_property(k)) {
-            $unset.push(k);
-        }
-    }, this);
-
-    data[UNSET_ACTION] = $unset;
-
-    return this._send_request(data, callback);
-};
-
-/*
- * Increment/decrement numeric people analytics properties.
- *
- * ### Usage:
- *
- *     mixpanel.people.increment('page_views', 1);
- *
- *     // or, for convenience, if you're just incrementing a counter by
- *     // 1, you can simply do
- *     mixpanel.people.increment('page_views');
- *
- *     // to decrement a counter, pass a negative number
- *     mixpanel.people.increment('credits_left', -1);
- *
- *     // like mixpanel.people.set(), you can increment multiple
- *     // properties at once:
- *     mixpanel.people.increment({
- *         counter1: 1,
- *         counter2: 6
- *     });
- *
- * @param {Object|String} prop If a string, this is the name of the property. If an object, this is an associative array of names and numeric values.
- * @param {Number} [by] An amount to increment the given property
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.increment = addOptOutCheckMixpanelPeople(function(prop, by, callback) {
-    var data = {};
-    var $add = {};
-    if (_.isObject(prop)) {
-        _.each(prop, function(v, k) {
-            if (!this._is_reserved_property(k)) {
-                if (isNaN(parseFloat(v))) {
-                    console$1.error('Invalid increment value passed to mixpanel.people.increment - must be a number');
-                    return;
-                } else {
-                    $add[k] = v;
-                }
-            }
-        }, this);
-        callback = by;
-    } else {
-        // convenience: mixpanel.people.increment('property'); will
-        // increment 'property' by 1
-        if (_.isUndefined(by)) {
-            by = 1;
-        }
-        $add[prop] = by;
-    }
-    data[ADD_ACTION] = $add;
-
-    return this._send_request(data, callback);
-});
-
-/*
- * Append a value to a list-valued people analytics property.
- *
- * ### Usage:
- *
- *     // append a value to a list, creating it if needed
- *     mixpanel.people.append('pages_visited', 'homepage');
- *
- *     // like mixpanel.people.set(), you can append multiple
- *     // properties at once:
- *     mixpanel.people.append({
- *         list1: 'bob',
- *         list2: 123
- *     });
- *
- * @param {Object|String} prop If a string, this is the name of the property. If an object, this is an associative array of names and values.
- * @param {*} [value] An item to append to the list
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.append = addOptOutCheckMixpanelPeople(function(list_name, value, callback) {
-    var data = {};
-    var $append = {};
-    if (_.isObject(list_name)) {
-        _.each(list_name, function(v, k) {
-            if (!this._is_reserved_property(k)) {
-                $append[k] = v;
-            }
-        }, this);
-        callback = value;
-    } else {
-        $append[list_name] = value;
-    }
-    data[APPEND_ACTION] = $append;
-
-    return this._send_request(data, callback);
-});
-
-/*
- * Merge a given list with a list-valued people analytics property,
- * excluding duplicate values.
- *
- * ### Usage:
- *
- *     // merge a value to a list, creating it if needed
- *     mixpanel.people.union('pages_visited', 'homepage');
- *
- *     // like mixpanel.people.set(), you can append multiple
- *     // properties at once:
- *     mixpanel.people.union({
- *         list1: 'bob',
- *         list2: 123
- *     });
- *
- *     // like mixpanel.people.append(), you can append multiple
- *     // values to the same list:
- *     mixpanel.people.union({
- *         list1: ['bob', 'billy']
- *     });
- *
- * @param {Object|String} prop If a string, this is the name of the property. If an object, this is an associative array of names and values.
- * @param {*} [value] Value / values to merge with the given property
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.union = addOptOutCheckMixpanelPeople(function(list_name, values, callback) {
-    var data = {};
-    var $union = {};
-    if (_.isObject(list_name)) {
-        _.each(list_name, function(v, k) {
-            if (!this._is_reserved_property(k)) {
-                $union[k] = _.isArray(v) ? v : [v];
-            }
-        }, this);
-        callback = values;
-    } else {
-        $union[list_name] = _.isArray(values) ? values : [values];
-    }
-    data[UNION_ACTION] = $union;
-
-    return this._send_request(data, callback);
-});
-
-/*
- * Record that you have charged the current user a certain amount
- * of money. Charges recorded with track_charge() will appear in the
- * Mixpanel revenue report.
- *
- * ### Usage:
- *
- *     // charge a user $50
- *     mixpanel.people.track_charge(50);
- *
- *     // charge a user $30.50 on the 2nd of january
- *     mixpanel.people.track_charge(30.50, {
- *         '$time': new Date('jan 1 2012')
- *     });
- *
- * @param {Number} amount The amount of money charged to the current user
- * @param {Object} [properties] An associative array of properties associated with the charge
- * @param {Function} [callback] If provided, the callback will be called when the server responds
- */
-MixpanelPeople.prototype.track_charge = addOptOutCheckMixpanelPeople(function(amount, properties, callback) {
-    if (!_.isNumber(amount)) {
-        amount = parseFloat(amount);
-        if (isNaN(amount)) {
-            console$1.error('Invalid value passed to mixpanel.people.track_charge - must be a number');
-            return;
-        }
-    }
-
-    return this.append('$transactions', _.extend({
-        '$amount': amount
-    }, properties), callback);
-});
-
-/*
- * Permanently clear all revenue report transactions from the
- * current user's people analytics profile.
- *
- * ### Usage:
- *
- *     mixpanel.people.clear_charges();
- *
- * @param {Function} [callback] If provided, the callback will be called after the tracking event
- */
-MixpanelPeople.prototype.clear_charges = function(callback) {
-    return this.set('$transactions', [], callback);
-};
-
-/*
- * Permanently deletes the current people analytics profile from
- * Mixpanel (using the current distinct_id).
- *
- * ### Usage:
- *
- *     // remove the all data you have stored about the current user
- *     mixpanel.people.delete_user();
- *
- */
-MixpanelPeople.prototype.delete_user = function() {
-    if (!this._identify_called()) {
-        console$1.error('mixpanel.people.delete_user() requires you to call identify() first');
-        return;
-    }
-    var data = {'$delete': this._mixpanel.get_distinct_id()};
-    return this._send_request(data);
-};
-
-MixpanelPeople.prototype.toString = function() {
-    return this._mixpanel.toString() + '.people';
-};
-
-MixpanelPeople.prototype._send_request = function(data, callback) {
-    data['$token'] = this._get_config('token');
-    data['$distinct_id'] = this._mixpanel.get_distinct_id();
-
-    var date_encoded_data = _.encodeDates(data);
-    var truncated_data    = _.truncate(date_encoded_data, 255);
-    var json_data         = _.JSONEncode(date_encoded_data);
-    var encoded_data      = _.base64Encode(json_data);
-
-    if (!this._identify_called()) {
-        this._enqueue(data);
-        if (!_.isUndefined(callback)) {
-            if (this._get_config('verbose')) {
-                callback({status: -1, error: null});
-            } else {
-                callback(-1);
-            }
-        }
-        return truncated_data;
-    }
-
-    console$1.log('MIXPANEL PEOPLE REQUEST:');
-    console$1.log(truncated_data);
-
-    this._mixpanel._send_request(
-        this._get_config('api_host') + '/engage/',
-        {'data': encoded_data},
-        this._mixpanel._prepare_callback(callback, truncated_data)
-    );
-
-    return truncated_data;
-};
-
-MixpanelPeople.prototype._get_config = function(conf_var) {
-    return this._mixpanel.get_config(conf_var);
-};
-
-MixpanelPeople.prototype._identify_called = function() {
-    return this._mixpanel._flags.identify_called === true;
-};
-
-// Queue up engage operations if identify hasn't been called yet.
-MixpanelPeople.prototype._enqueue = function(data) {
-    if (SET_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(SET_ACTION, data);
-    } else if (SET_ONCE_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(SET_ONCE_ACTION, data);
-    } else if (UNSET_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(UNSET_ACTION, data);
-    } else if (ADD_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(ADD_ACTION, data);
-    } else if (APPEND_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(APPEND_ACTION, data);
-    } else if (UNION_ACTION in data) {
-        this._mixpanel['persistence']._add_to_people_queue(UNION_ACTION, data);
-    } else {
-        console$1.error('Invalid call to _enqueue():', data);
-    }
-};
-
-MixpanelPeople.prototype._flush_one_queue = function(action, action_method, callback, queue_to_params_fn) {
-    var _this = this;
-    var queued_data = _.extend({}, this._mixpanel['persistence']._get_queue(action));
-    var action_params = queued_data;
-
-    if (!_.isUndefined(queued_data) && _.isObject(queued_data) && !_.isEmptyObject(queued_data)) {
-        _this._mixpanel['persistence']._pop_from_people_queue(action, queued_data);
-        if (queue_to_params_fn) {
-            action_params = queue_to_params_fn(queued_data);
-        }
-        action_method.call(_this, action_params, function(response, data) {
-            // on bad response, we want to add it back to the queue
-            if (response === 0) {
-                _this._mixpanel['persistence']._add_to_people_queue(action, queued_data);
-            }
-            if (!_.isUndefined(callback)) {
-                callback(response, data);
-            }
-        });
-    }
-};
-
-// Flush queued engage operations - order does not matter,
-// and there are network level race conditions anyway
-MixpanelPeople.prototype._flush = function(
-    _set_callback, _add_callback, _append_callback, _set_once_callback, _union_callback, _unset_callback
-) {
-    var _this = this;
-    var $append_queue = this._mixpanel['persistence']._get_queue(APPEND_ACTION);
-
-    this._flush_one_queue(SET_ACTION, this.set, _set_callback);
-    this._flush_one_queue(SET_ONCE_ACTION, this.set_once, _set_once_callback);
-    this._flush_one_queue(UNSET_ACTION, this.unset, _unset_callback, function(queue) { return _.keys(queue); });
-    this._flush_one_queue(ADD_ACTION, this.increment, _add_callback);
-    this._flush_one_queue(UNION_ACTION, this.union, _union_callback);
-
-    // we have to fire off each $append individually since there is
-    // no concat method server side
-    if (!_.isUndefined($append_queue) && _.isArray($append_queue) && $append_queue.length) {
-        var $append_item;
-        var callback = function(response, data) {
-            if (response === 0) {
-                _this._mixpanel['persistence']._add_to_people_queue(APPEND_ACTION, $append_item);
-            }
-            if (!_.isUndefined(_append_callback)) {
-                _append_callback(response, data);
-            }
-        };
-        for (var i = $append_queue.length - 1; i >= 0; i--) {
-            $append_item = $append_queue.pop();
-            _this.append($append_item, callback);
-        }
-        // Save the shortened append queue
-        _this._mixpanel['persistence'].save();
-    }
-};
-
-MixpanelPeople.prototype._is_reserved_property = function(prop) {
-    return prop === '$distinct_id' || prop === '$token';
-};
-
-
-// Internal class for notification display
-MixpanelLib._Notification = function(notif_data, mixpanel_instance) {
-    _.bind_instance_methods(this);
-
-    this.mixpanel    = mixpanel_instance;
-    this.persistence = this.mixpanel['persistence'];
-
-    this.campaign_id = _.escapeHTML(notif_data['id']);
-    this.message_id  = _.escapeHTML(notif_data['message_id']);
-
-    this.body            = (_.escapeHTML(notif_data['body']) || '').replace(/\n/g, '<br/>');
-    this.cta             = _.escapeHTML(notif_data['cta']) || 'Close';
-    this.notif_type      = _.escapeHTML(notif_data['type']) || 'takeover';
-    this.style           = _.escapeHTML(notif_data['style']) || 'light';
-    this.title           = _.escapeHTML(notif_data['title']) || '';
-    this.video_width     = MPNotif.VIDEO_WIDTH;
-    this.video_height    = MPNotif.VIDEO_HEIGHT;
-
-    // These fields are url-sanitized in the backend already.
-    this.dest_url        = notif_data['cta_url'] || null;
-    this.image_url       = notif_data['image_url'] || null;
-    this.thumb_image_url = notif_data['thumb_image_url'] || null;
-    this.video_url       = notif_data['video_url'] || null;
-
-    this.clickthrough = true;
-    if (!this.dest_url) {
-        this.dest_url = '#dismiss';
-        this.clickthrough = false;
-    }
-
-    this.mini = this.notif_type === 'mini';
-    if (!this.mini) {
-        this.notif_type = 'takeover';
-    }
-    this.notif_width = !this.mini ? MPNotif.NOTIF_WIDTH : MPNotif.NOTIF_WIDTH_MINI;
-
-    this._set_client_config();
-    this.imgs_to_preload = this._init_image_html();
-    this._init_video();
-};
-
-MPNotif = MixpanelLib._Notification;
-
-MPNotif.ANIM_TIME         = 200;
-MPNotif.MARKUP_PREFIX     = 'mixpanel-notification';
-MPNotif.BG_OPACITY        = 0.6;
-MPNotif.NOTIF_TOP         = 25;
-MPNotif.NOTIF_START_TOP   = 200;
-MPNotif.NOTIF_WIDTH       = 388;
-MPNotif.NOTIF_WIDTH_MINI  = 420;
-MPNotif.NOTIF_HEIGHT_MINI = 85;
-MPNotif.THUMB_BORDER_SIZE = 5;
-MPNotif.THUMB_IMG_SIZE    = 60;
-MPNotif.THUMB_OFFSET      = Math.round(MPNotif.THUMB_IMG_SIZE / 2);
-MPNotif.VIDEO_WIDTH       = 595;
-MPNotif.VIDEO_HEIGHT      = 334;
-
-MPNotif.prototype.show = function() {
-    var self = this;
-    this._set_client_config();
-
-    // don't display until HTML body exists
-    if (!this.body_el) {
-        setTimeout(function() { self.show(); }, 300);
-        return;
-    }
-
-    this._init_styles();
-    this._init_notification_el();
-
-    // wait for any images to load before showing notification
-    this._preload_images(this._attach_and_animate);
-};
-
-MPNotif.prototype.dismiss = _.safewrap(function() {
-    if (!this.marked_as_shown) {
-        // unexpected condition: user interacted with notif even though we didn't consider it
-        // visible (see _mark_as_shown()); send tracking signals to mark delivery
-        this._mark_delivery({'invisible': true});
-    }
-
-    var exiting_el = this.showing_video ? this._get_el('video') : this._get_notification_display_el();
-    if (this.use_transitions) {
-        this._remove_class('bg', 'visible');
-        this._add_class(exiting_el, 'exiting');
-        setTimeout(this._remove_notification_el, MPNotif.ANIM_TIME);
-    } else {
-        var notif_attr, notif_start, notif_goal;
-        if (this.mini) {
-            notif_attr  = 'right';
-            notif_start = 20;
-            notif_goal  = -100;
-        } else {
-            notif_attr  = 'top';
-            notif_start = MPNotif.NOTIF_TOP;
-            notif_goal  = MPNotif.NOTIF_START_TOP + MPNotif.NOTIF_TOP;
-        }
-        this._animate_els([
-            {
-                el:    this._get_el('bg'),
-                attr:  'opacity',
-                start: MPNotif.BG_OPACITY,
-                goal:  0.0
-            },
-            {
-                el:    exiting_el,
-                attr:  'opacity',
-                start: 1.0,
-                goal:  0.0
-            },
-            {
-                el:    exiting_el,
-                attr:  notif_attr,
-                start: notif_start,
-                goal:  notif_goal
-            }
-        ], MPNotif.ANIM_TIME, this._remove_notification_el);
-    }
-});
-
-MPNotif.prototype._add_class = _.safewrap(function(el, class_name) {
-    class_name = MPNotif.MARKUP_PREFIX + '-' + class_name;
-    if (typeof el === 'string') {
-        el = this._get_el(el);
-    }
-    if (!el.className) {
-        el.className = class_name;
-    } else if (!~(' ' + el.className + ' ').indexOf(' ' + class_name + ' ')) {
-        el.className += ' ' + class_name;
-    }
-});
-MPNotif.prototype._remove_class = _.safewrap(function(el, class_name) {
-    class_name = MPNotif.MARKUP_PREFIX + '-' + class_name;
-    if (typeof el === 'string') {
-        el = this._get_el(el);
-    }
-    if (el.className) {
-        el.className = (' ' + el.className + ' ')
-                .replace(' ' + class_name + ' ', '')
-                .replace(/^[\s\xA0]+/, '')
-                .replace(/[\s\xA0]+$/, '');
-    }
-});
-
-MPNotif.prototype._animate_els = _.safewrap(function(anims, mss, done_cb, start_time) {
-    var self = this,
-        in_progress = false,
-        ai, anim,
-        cur_time = 1 * new Date(), time_diff;
-
-    start_time = start_time || cur_time;
-    time_diff = cur_time - start_time;
-
-    for (ai = 0; ai < anims.length; ai++) {
-        anim = anims[ai];
-        if (typeof anim.val === 'undefined') {
-            anim.val = anim.start;
-        }
-        if (anim.val !== anim.goal) {
-            in_progress = true;
-            var anim_diff = anim.goal - anim.start,
-                anim_dir = anim.goal >= anim.start ? 1 : -1;
-            anim.val = anim.start + anim_diff * time_diff / mss;
-            if (anim.attr !== 'opacity') {
-                anim.val = Math.round(anim.val);
-            }
-            if ((anim_dir > 0 && anim.val >= anim.goal) || (anim_dir < 0 && anim.val <= anim.goal)) {
-                anim.val = anim.goal;
-            }
-        }
-    }
-    if (!in_progress) {
-        if (done_cb) {
-            done_cb();
-        }
-        return;
-    }
-
-    for (ai = 0; ai < anims.length; ai++) {
-        anim = anims[ai];
-        if (anim.el) {
-            var suffix = anim.attr === 'opacity' ? '' : 'px';
-            anim.el.style[anim.attr] = String(anim.val) + suffix;
-        }
-    }
-    setTimeout(function() { self._animate_els(anims, mss, done_cb, start_time); }, 10);
-});
-
-MPNotif.prototype._attach_and_animate = _.safewrap(function() {
-    var self = this;
-
-    // no possibility to double-display
-    if (this.shown || this._get_shown_campaigns()[this.campaign_id]) {
-        return;
-    }
-    this.shown = true;
-
-    this.body_el.appendChild(this.notification_el);
-    setTimeout(function() {
-        var notif_el = self._get_notification_display_el();
-        if (self.use_transitions) {
-            if (!self.mini) {
-                self._add_class('bg', 'visible');
-            }
-            self._add_class(notif_el, 'visible');
-            self._mark_as_shown();
-        } else {
-            var notif_attr, notif_start, notif_goal;
-            if (self.mini) {
-                notif_attr  = 'right';
-                notif_start = -100;
-                notif_goal  = 20;
-            } else {
-                notif_attr  = 'top';
-                notif_start = MPNotif.NOTIF_START_TOP + MPNotif.NOTIF_TOP;
-                notif_goal  = MPNotif.NOTIF_TOP;
-            }
-            self._animate_els([
-                {
-                    el:    self._get_el('bg'),
-                    attr:  'opacity',
-                    start: 0.0,
-                    goal:  MPNotif.BG_OPACITY
-                },
-                {
-                    el:    notif_el,
-                    attr:  'opacity',
-                    start: 0.0,
-                    goal:  1.0
-                },
-                {
-                    el:    notif_el,
-                    attr:  notif_attr,
-                    start: notif_start,
-                    goal:  notif_goal
-                }
-            ], MPNotif.ANIM_TIME, self._mark_as_shown);
-        }
-    }, 100);
-    _.register_event(self._get_el('cancel'), 'click', function(e) {
-        e.preventDefault();
-        self.dismiss();
-    });
-    var click_el = self._get_el('button') ||
-                       self._get_el('mini-content');
-    _.register_event(click_el, 'click', function(e) {
-        e.preventDefault();
-        if (self.show_video) {
-            self._track_event('$campaign_open', {'$resource_type': 'video'});
-            self._switch_to_video();
-        } else {
-            self.dismiss();
-            if (self.clickthrough) {
-                self._track_event('$campaign_open', {'$resource_type': 'link'}, function() {
-                    window$1.location.href = self.dest_url;
-                });
-            }
-        }
-    });
-});
-
-MPNotif.prototype._get_el = function(id) {
-    return document$1.getElementById(MPNotif.MARKUP_PREFIX + '-' + id);
-};
-
-MPNotif.prototype._get_notification_display_el = function() {
-    return this._get_el(this.notif_type);
-};
-
-MPNotif.prototype._get_shown_campaigns = function() {
-    return this.persistence['props'][CAMPAIGN_IDS_KEY] || (this.persistence['props'][CAMPAIGN_IDS_KEY] = {});
-};
-
-MPNotif.prototype._browser_lte = function(browser, version) {
-    return this.browser_versions[browser] && this.browser_versions[browser] <= version;
-};
-
-MPNotif.prototype._init_image_html = function() {
-    var imgs_to_preload = [];
-
-    if (!this.mini) {
-        if (this.image_url) {
-            imgs_to_preload.push(this.image_url);
-            this.img_html = '<img id="img" src="' + this.image_url + '"/>';
-        } else {
-            this.img_html = '';
-        }
-        if (this.thumb_image_url) {
-            imgs_to_preload.push(this.thumb_image_url);
-            this.thumb_img_html =
-                    '<div id="thumbborder-wrapper"><div id="thumbborder"></div></div>' +
-                    '<img id="thumbnail"' +
-                        ' src="' + this.thumb_image_url + '"' +
-                        ' width="' + MPNotif.THUMB_IMG_SIZE + '"' +
-                        ' height="' + MPNotif.THUMB_IMG_SIZE + '"' +
-                    '/>' +
-                    '<div id="thumbspacer"></div>';
-        } else {
-            this.thumb_img_html = '';
-        }
-    } else {
-        this.thumb_image_url = this.thumb_image_url || '//cdn.mxpnl.com/site_media/images/icons/notifications/mini-news-dark.png';
-        imgs_to_preload.push(this.thumb_image_url);
-    }
-
-    return imgs_to_preload;
-};
-
-MPNotif.prototype._init_notification_el = function() {
-    var notification_html = '';
-    var video_src         = '';
-    var video_html        = '';
-    var cancel_html       = '<div id="cancel">' +
-                                    '<div id="cancel-icon"></div>' +
-                                '</div>';
-
-    this.notification_el = document$1.createElement('div');
-    this.notification_el.id = MPNotif.MARKUP_PREFIX + '-wrapper';
-    if (!this.mini) {
-        // TAKEOVER notification
-        var close_html  = (this.clickthrough || this.show_video) ? '' : '<div id="button-close"></div>',
-            play_html   = this.show_video ? '<div id="button-play"></div>' : '';
-        if (this._browser_lte('ie', 7)) {
-            close_html = '';
-            play_html = '';
-        }
-        notification_html =
-                '<div id="takeover">' +
-                    this.thumb_img_html +
-                    '<div id="mainbox">' +
-                        cancel_html +
-                        '<div id="content">' +
-                            this.img_html +
-                            '<div id="title">' + this.title + '</div>' +
-                            '<div id="body">' + this.body + '</div>' +
-                            '<div id="tagline">' +
-                                '<a href="http://mixpanel.com?from=inapp" target="_blank">POWERED BY MIXPANEL</a>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div id="button">' +
-                            close_html +
-                            '<a id="button-link" href="' + this.dest_url + '">' + this.cta + '</a>' +
-                            play_html +
-                        '</div>' +
-                    '</div>' +
-                '</div>';
-    } else {
-        // MINI notification
-        notification_html =
-                '<div id="mini">' +
-                    '<div id="mainbox">' +
-                        cancel_html +
-                        '<div id="mini-content">' +
-                            '<div id="mini-icon">' +
-                                '<div id="mini-icon-img"></div>' +
-                            '</div>' +
-                            '<div id="body">' +
-                                '<div id="body-text"><div>' + this.body + '</div></div>' +
-                            '</div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div id="mini-border"></div>' +
-                '</div>';
-    }
-    if (this.youtube_video) {
-        video_src = '//www.youtube.com/embed/' + this.youtube_video +
-                '?wmode=transparent&showinfo=0&modestbranding=0&rel=0&autoplay=1&loop=0&vq=hd1080';
-        if (this.yt_custom) {
-            video_src += '&enablejsapi=1&html5=1&controls=0';
-            video_html =
-                    '<div id="video-controls">' +
-                        '<div id="video-progress" class="video-progress-el">' +
-                            '<div id="video-progress-total" class="video-progress-el"></div>' +
-                            '<div id="video-elapsed" class="video-progress-el"></div>' +
-                        '</div>' +
-                        '<div id="video-time" class="video-progress-el"></div>' +
-                    '</div>';
-        }
-    } else if (this.vimeo_video) {
-        video_src = '//player.vimeo.com/video/' + this.vimeo_video + '?autoplay=1&title=0&byline=0&portrait=0';
-    }
-    if (this.show_video) {
-        this.video_iframe =
-                '<iframe id="' + MPNotif.MARKUP_PREFIX + '-video-frame" ' +
-                    'width="' + this.video_width + '" height="' + this.video_height + '" ' +
-                    ' src="' + video_src + '"' +
-                    ' frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen="1" scrolling="no"' +
-                '></iframe>';
-        video_html =
-                '<div id="video-' + (this.flip_animate ? '' : 'no') + 'flip">' +
-                    '<div id="video">' +
-                        '<div id="video-holder"></div>' +
-                        video_html +
-                    '</div>' +
-                '</div>';
-    }
-    var main_html = video_html + notification_html;
-    if (this.flip_animate) {
-        main_html =
-                (this.mini ? notification_html : '') +
-                '<div id="flipcontainer"><div id="flipper">' +
-                    (this.mini ? video_html : main_html) +
-                '</div></div>';
-    }
-
-    this.notification_el.innerHTML =
-            ('<div id="overlay" class="' + this.notif_type + '">' +
-                '<div id="campaignid-' + this.campaign_id + '">' +
-                    '<div id="bgwrapper">' +
-                        '<div id="bg"></div>' +
-                        main_html +
-                    '</div>' +
-                '</div>' +
-            '</div>')
-            .replace(/class=\"/g, 'class="' + MPNotif.MARKUP_PREFIX + '-')
-            .replace(/id=\"/g, 'id="' + MPNotif.MARKUP_PREFIX + '-');
-};
-
-MPNotif.prototype._init_styles = function() {
-    if (this.style === 'dark') {
-        this.style_vals = {
-            bg:             '#1d1f25',
-            bg_actions:     '#282b32',
-            bg_hover:       '#3a4147',
-            bg_light:       '#4a5157',
-            border_gray:    '#32353c',
-            cancel_opacity: '0.4',
-            mini_hover:     '#2a3137',
-            text_title:     '#fff',
-            text_main:      '#9498a3',
-            text_tagline:   '#464851',
-            text_hover:     '#ddd'
-        };
-    } else {
-        this.style_vals = {
-            bg:             '#fff',
-            bg_actions:     '#e7eaee',
-            bg_hover:       '#eceff3',
-            bg_light:       '#f5f5f5',
-            border_gray:    '#e4ecf2',
-            cancel_opacity: '1.0',
-            mini_hover:     '#fafafa',
-            text_title:     '#5c6578',
-            text_main:      '#8b949b',
-            text_tagline:   '#ced9e6',
-            text_hover:     '#7c8598'
-        };
-    }
-    var shadow = '0px 0px 35px 0px rgba(45, 49, 56, 0.7)',
-        video_shadow = shadow,
-        mini_shadow = shadow,
-        thumb_total_size = MPNotif.THUMB_IMG_SIZE + MPNotif.THUMB_BORDER_SIZE * 2,
-        anim_seconds = (MPNotif.ANIM_TIME / 1000) + 's';
-    if (this.mini) {
-        shadow = 'none';
-    }
-
-    // don't display on small viewports
-    var notif_media_queries = {},
-        min_width = MPNotif.NOTIF_WIDTH_MINI + 20;
-    notif_media_queries['@media only screen and (max-width: ' + (min_width - 1) + 'px)'] = {
-        '#overlay': {
-            'display': 'none'
-        }
-    };
-    var notif_styles = {
-        '.flipped': {
-            'transform': 'rotateY(180deg)'
-        },
-        '#overlay': {
-            'position': 'fixed',
-            'top': '0',
-            'left': '0',
-            'width': '100%',
-            'height': '100%',
-            'overflow': 'auto',
-            'text-align': 'center',
-            'z-index': '10000',
-            'font-family': '"Helvetica", "Arial", sans-serif',
-            '-webkit-font-smoothing': 'antialiased',
-            '-moz-osx-font-smoothing': 'grayscale'
-        },
-        '#overlay.mini': {
-            'height': '0',
-            'overflow': 'visible'
-        },
-        '#overlay a': {
-            'width': 'initial',
-            'padding': '0',
-            'text-decoration': 'none',
-            'text-transform': 'none',
-            'color': 'inherit'
-        },
-        '#bgwrapper': {
-            'position': 'relative',
-            'width': '100%',
-            'height': '100%'
-        },
-        '#bg': {
-            'position': 'fixed',
-            'top': '0',
-            'left': '0',
-            'width': '100%',
-            'height': '100%',
-            'min-width': this.doc_width * 4 + 'px',
-            'min-height': this.doc_height * 4 + 'px',
-            'background-color': 'black',
-            'opacity': '0.0',
-            '-ms-filter': 'progid:DXImageTransform.Microsoft.Alpha(Opacity=60)', // IE8
-            'filter': 'alpha(opacity=60)', // IE5-7
-            'transition': 'opacity ' + anim_seconds
-        },
-        '#bg.visible': {
-            'opacity': MPNotif.BG_OPACITY
-        },
-        '.mini #bg': {
-            'width': '0',
-            'height': '0',
-            'min-width': '0'
-        },
-        '#flipcontainer': {
-            'perspective': '1000px',
-            'position': 'absolute',
-            'width': '100%'
-        },
-        '#flipper': {
-            'position': 'relative',
-            'transform-style': 'preserve-3d',
-            'transition': '0.3s'
-        },
-        '#takeover': {
-            'position': 'absolute',
-            'left': '50%',
-            'width': MPNotif.NOTIF_WIDTH + 'px',
-            'margin-left': Math.round(-MPNotif.NOTIF_WIDTH / 2) + 'px',
-            'backface-visibility': 'hidden',
-            'transform': 'rotateY(0deg)',
-            'opacity': '0.0',
-            'top': MPNotif.NOTIF_START_TOP + 'px',
-            'transition': 'opacity ' + anim_seconds + ', top ' + anim_seconds
-        },
-        '#takeover.visible': {
-            'opacity': '1.0',
-            'top': MPNotif.NOTIF_TOP + 'px'
-        },
-        '#takeover.exiting': {
-            'opacity': '0.0',
-            'top': MPNotif.NOTIF_START_TOP + 'px'
-        },
-        '#thumbspacer': {
-            'height': MPNotif.THUMB_OFFSET + 'px'
-        },
-        '#thumbborder-wrapper': {
-            'position': 'absolute',
-            'top': (-MPNotif.THUMB_BORDER_SIZE) + 'px',
-            'left': (MPNotif.NOTIF_WIDTH / 2 - MPNotif.THUMB_OFFSET - MPNotif.THUMB_BORDER_SIZE) + 'px',
-            'width': thumb_total_size + 'px',
-            'height': (thumb_total_size / 2) + 'px',
-            'overflow': 'hidden'
-        },
-        '#thumbborder': {
-            'position': 'absolute',
-            'width': thumb_total_size + 'px',
-            'height': thumb_total_size + 'px',
-            'border-radius': thumb_total_size + 'px',
-            'background-color': this.style_vals.bg_actions,
-            'opacity': '0.5'
-        },
-        '#thumbnail': {
-            'position': 'absolute',
-            'top': '0px',
-            'left': (MPNotif.NOTIF_WIDTH / 2 - MPNotif.THUMB_OFFSET) + 'px',
-            'width': MPNotif.THUMB_IMG_SIZE + 'px',
-            'height': MPNotif.THUMB_IMG_SIZE + 'px',
-            'overflow': 'hidden',
-            'z-index': '100',
-            'border-radius': MPNotif.THUMB_IMG_SIZE + 'px'
-        },
-        '#mini': {
-            'position': 'absolute',
-            'right': '20px',
-            'top': MPNotif.NOTIF_TOP + 'px',
-            'width': this.notif_width + 'px',
-            'height': MPNotif.NOTIF_HEIGHT_MINI * 2 + 'px',
-            'margin-top': 20 - MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'backface-visibility': 'hidden',
-            'opacity': '0.0',
-            'transform': 'rotateX(90deg)',
-            'transition': 'opacity 0.3s, transform 0.3s, right 0.3s'
-        },
-        '#mini.visible': {
-            'opacity': '1.0',
-            'transform': 'rotateX(0deg)'
-        },
-        '#mini.exiting': {
-            'opacity': '0.0',
-            'right': '-150px'
-        },
-        '#mainbox': {
-            'border-radius': '4px',
-            'box-shadow': shadow,
-            'text-align': 'center',
-            'background-color': this.style_vals.bg,
-            'font-size': '14px',
-            'color': this.style_vals.text_main
-        },
-        '#mini #mainbox': {
-            'height': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'margin-top': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'border-radius': '3px',
-            'transition': 'background-color ' + anim_seconds
-        },
-        '#mini-border': {
-            'height': (MPNotif.NOTIF_HEIGHT_MINI + 6) + 'px',
-            'width': (MPNotif.NOTIF_WIDTH_MINI + 6) + 'px',
-            'position': 'absolute',
-            'top': '-3px',
-            'left': '-3px',
-            'margin-top': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'border-radius': '6px',
-            'opacity': '0.25',
-            'background-color': '#fff',
-            'z-index': '-1',
-            'box-shadow': mini_shadow
-        },
-        '#mini-icon': {
-            'position': 'relative',
-            'display': 'inline-block',
-            'width': '75px',
-            'height': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'border-radius': '3px 0 0 3px',
-            'background-color': this.style_vals.bg_actions,
-            'background': 'linear-gradient(135deg, ' + this.style_vals.bg_light + ' 0%, ' + this.style_vals.bg_actions + ' 100%)',
-            'transition': 'background-color ' + anim_seconds
-        },
-        '#mini:hover #mini-icon': {
-            'background-color': this.style_vals.mini_hover
-        },
-        '#mini:hover #mainbox': {
-            'background-color': this.style_vals.mini_hover
-        },
-        '#mini-icon-img': {
-            'position': 'absolute',
-            'background-image': 'url(' + this.thumb_image_url + ')',
-            'width': '48px',
-            'height': '48px',
-            'top': '20px',
-            'left': '12px'
-        },
-        '#content': {
-            'padding': '30px 20px 0px 20px'
-        },
-        '#mini-content': {
-            'text-align': 'left',
-            'height': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'cursor': 'pointer'
-        },
-        '#img': {
-            'width': '328px',
-            'margin-top': '30px',
-            'border-radius': '5px'
-        },
-        '#title': {
-            'max-height': '600px',
-            'overflow': 'hidden',
-            'word-wrap': 'break-word',
-            'padding': '25px 0px 20px 0px',
-            'font-size': '19px',
-            'font-weight': 'bold',
-            'color': this.style_vals.text_title
-        },
-        '#body': {
-            'max-height': '600px',
-            'margin-bottom': '25px',
-            'overflow': 'hidden',
-            'word-wrap': 'break-word',
-            'line-height': '21px',
-            'font-size': '15px',
-            'font-weight': 'normal',
-            'text-align': 'left'
-        },
-        '#mini #body': {
-            'display': 'inline-block',
-            'max-width': '250px',
-            'margin': '0 0 0 30px',
-            'height': MPNotif.NOTIF_HEIGHT_MINI + 'px',
-            'font-size': '16px',
-            'letter-spacing': '0.8px',
-            'color': this.style_vals.text_title
-        },
-        '#mini #body-text': {
-            'display': 'table',
-            'height': MPNotif.NOTIF_HEIGHT_MINI + 'px'
-        },
-        '#mini #body-text div': {
-            'display': 'table-cell',
-            'vertical-align': 'middle'
-        },
-        '#tagline': {
-            'margin-bottom': '15px',
-            'font-size': '10px',
-            'font-weight': '600',
-            'letter-spacing': '0.8px',
-            'color': '#ccd7e0',
-            'text-align': 'left'
-        },
-        '#tagline a': {
-            'color': this.style_vals.text_tagline,
-            'transition': 'color ' + anim_seconds
-        },
-        '#tagline a:hover': {
-            'color': this.style_vals.text_hover
-        },
-        '#cancel': {
-            'position': 'absolute',
-            'right': '0',
-            'width': '8px',
-            'height': '8px',
-            'padding': '10px',
-            'border-radius': '20px',
-            'margin': '12px 12px 0 0',
-            'box-sizing': 'content-box',
-            'cursor': 'pointer',
-            'transition': 'background-color ' + anim_seconds
-        },
-        '#mini #cancel': {
-            'margin': '7px 7px 0 0'
-        },
-        '#cancel-icon': {
-            'width': '8px',
-            'height': '8px',
-            'overflow': 'hidden',
-            'background-image': 'url(//cdn.mxpnl.com/site_media/images/icons/notifications/cancel-x.png)',
-            'opacity': this.style_vals.cancel_opacity
-        },
-        '#cancel:hover': {
-            'background-color': this.style_vals.bg_hover
-        },
-        '#button': {
-            'display': 'block',
-            'height': '60px',
-            'line-height': '60px',
-            'text-align': 'center',
-            'background-color': this.style_vals.bg_actions,
-            'border-radius': '0 0 4px 4px',
-            'overflow': 'hidden',
-            'cursor': 'pointer',
-            'transition': 'background-color ' + anim_seconds
-        },
-        '#button-close': {
-            'display': 'inline-block',
-            'width': '9px',
-            'height': '60px',
-            'margin-right': '8px',
-            'vertical-align': 'top',
-            'background-image': 'url(//cdn.mxpnl.com/site_media/images/icons/notifications/close-x-' + this.style + '.png)',
-            'background-repeat': 'no-repeat',
-            'background-position': '0px 25px'
-        },
-        '#button-play': {
-            'display': 'inline-block',
-            'width': '30px',
-            'height': '60px',
-            'margin-left': '15px',
-            'background-image': 'url(//cdn.mxpnl.com/site_media/images/icons/notifications/play-' + this.style + '-small.png)',
-            'background-repeat': 'no-repeat',
-            'background-position': '0px 15px'
-        },
-        'a#button-link': {
-            'display': 'inline-block',
-            'vertical-align': 'top',
-            'text-align': 'center',
-            'font-size': '17px',
-            'font-weight': 'bold',
-            'overflow': 'hidden',
-            'word-wrap': 'break-word',
-            'color': this.style_vals.text_title,
-            'transition': 'color ' + anim_seconds
-        },
-        '#button:hover': {
-            'background-color': this.style_vals.bg_hover,
-            'color': this.style_vals.text_hover
-        },
-        '#button:hover a': {
-            'color': this.style_vals.text_hover
-        },
-
-        '#video-noflip': {
-            'position': 'relative',
-            'top': (-this.video_height * 2) + 'px'
-        },
-        '#video-flip': {
-            'backface-visibility': 'hidden',
-            'transform': 'rotateY(180deg)'
-        },
-        '#video': {
-            'position': 'absolute',
-            'width': (this.video_width - 1) + 'px',
-            'height': this.video_height + 'px',
-            'top': MPNotif.NOTIF_TOP + 'px',
-            'margin-top': '100px',
-            'left': '50%',
-            'margin-left': Math.round(-this.video_width / 2) + 'px',
-            'overflow': 'hidden',
-            'border-radius': '5px',
-            'box-shadow': video_shadow,
-            'transform': 'translateZ(1px)', // webkit rendering bug http://stackoverflow.com/questions/18167981/clickable-link-area-unexpectedly-smaller-after-css-transform
-            'transition': 'opacity ' + anim_seconds + ', top ' + anim_seconds
-        },
-        '#video.exiting': {
-            'opacity': '0.0',
-            'top': this.video_height + 'px'
-        },
-        '#video-holder': {
-            'position': 'absolute',
-            'width': (this.video_width - 1) + 'px',
-            'height': this.video_height + 'px',
-            'overflow': 'hidden',
-            'border-radius': '5px'
-        },
-        '#video-frame': {
-            'margin-left': '-1px',
-            'width': this.video_width + 'px'
-        },
-        '#video-controls': {
-            'opacity': '0',
-            'transition': 'opacity 0.5s'
-        },
-        '#video:hover #video-controls': {
-            'opacity': '1.0'
-        },
-        '#video .video-progress-el': {
-            'position': 'absolute',
-            'bottom': '0',
-            'height': '25px',
-            'border-radius': '0 0 0 5px'
-        },
-        '#video-progress': {
-            'width': '90%'
-        },
-        '#video-progress-total': {
-            'width': '100%',
-            'background-color': this.style_vals.bg,
-            'opacity': '0.7'
-        },
-        '#video-elapsed': {
-            'width': '0',
-            'background-color': '#6cb6f5',
-            'opacity': '0.9'
-        },
-        '#video #video-time': {
-            'width': '10%',
-            'right': '0',
-            'font-size': '11px',
-            'line-height': '25px',
-            'color': this.style_vals.text_main,
-            'background-color': '#666',
-            'border-radius': '0 0 5px 0'
-        }
-    };
-
-    // IE hacks
-    if (this._browser_lte('ie', 8)) {
-        _.extend(notif_styles, {
-            '* html #overlay': {
-                'position': 'absolute'
-            },
-            '* html #bg': {
-                'position': 'absolute'
-            },
-            'html, body': {
-                'height': '100%'
-            }
-        });
-    }
-    if (this._browser_lte('ie', 7)) {
-        _.extend(notif_styles, {
-            '#mini #body': {
-                'display': 'inline',
-                'zoom': '1',
-                'border': '1px solid ' + this.style_vals.bg_hover
-            },
-            '#mini #body-text': {
-                'padding': '20px'
-            },
-            '#mini #mini-icon': {
-                'display': 'none'
-            }
-        });
-    }
-
-    // add vendor-prefixed style rules
-    var VENDOR_STYLES   = ['backface-visibility', 'border-radius', 'box-shadow', 'opacity',
-                               'perspective', 'transform', 'transform-style', 'transition'],
-        VENDOR_PREFIXES = ['khtml', 'moz', 'ms', 'o', 'webkit'];
-    for (var selector in notif_styles) {
-        for (var si = 0; si < VENDOR_STYLES.length; si++) {
-            var prop = VENDOR_STYLES[si];
-            if (prop in notif_styles[selector]) {
-                var val = notif_styles[selector][prop];
-                for (var pi = 0; pi < VENDOR_PREFIXES.length; pi++) {
-                    notif_styles[selector]['-' + VENDOR_PREFIXES[pi] + '-' + prop] = val;
-                }
-            }
-        }
-    }
-
-    var inject_styles = function(styles, media_queries) {
-        var create_style_text = function(style_defs) {
-            var st = '';
-            for (var selector in style_defs) {
-                var mp_selector = selector
-                        .replace(/#/g, '#' + MPNotif.MARKUP_PREFIX + '-')
-                        .replace(/\./g, '.' + MPNotif.MARKUP_PREFIX + '-');
-                st += '\n' + mp_selector + ' {';
-                var props = style_defs[selector];
-                for (var k in props) {
-                    st += k + ':' + props[k] + ';';
-                }
-                st += '}';
-            }
-            return st;
-        };
-        var create_media_query_text = function(mq_defs) {
-            var mqt = '';
-            for (var mq in mq_defs) {
-                mqt += '\n' + mq + ' {' + create_style_text(mq_defs[mq]) + '\n}';
-            }
-            return mqt;
-        };
-
-        var style_text = create_style_text(styles) + create_media_query_text(media_queries),
-            head_el = document$1.head || document$1.getElementsByTagName('head')[0] || document$1.documentElement,
-            style_el = document$1.createElement('style');
-        head_el.appendChild(style_el);
-        style_el.setAttribute('type', 'text/css');
-        if (style_el.styleSheet) { // IE
-            style_el.styleSheet.cssText = style_text;
-        } else {
-            style_el.textContent = style_text;
-        }
-    };
-    inject_styles(notif_styles, notif_media_queries);
-};
-
-MPNotif.prototype._init_video = _.safewrap(function() {
-    if (!this.video_url) {
-        return;
-    }
-    var self = this;
-
-    // Youtube iframe API compatibility
-    self.yt_custom = 'postMessage' in window$1;
-
-    self.dest_url = self.video_url;
-    var youtube_match = self.video_url.match(
-                // http://stackoverflow.com/questions/2936467/parse-youtube-video-id-using-preg-match
-                /(?:youtube(?:-nocookie)?\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i
-            ),
-        vimeo_match = self.video_url.match(
-                /vimeo\.com\/.*?(\d+)/i
-            );
-    if (youtube_match) {
-        self.show_video = true;
-        self.youtube_video = youtube_match[1];
-
-        if (self.yt_custom) {
-            window$1['onYouTubeIframeAPIReady'] = function() {
-                if (self._get_el('video-frame')) {
-                    self._yt_video_ready();
-                }
-            };
-
-            // load Youtube iframe API; see https://developers.google.com/youtube/iframe_api_reference
-            var tag = document$1.createElement('script');
-            tag.src = '//www.youtube.com/iframe_api';
-            var firstScriptTag = document$1.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
-    } else if (vimeo_match) {
-        self.show_video = true;
-        self.vimeo_video = vimeo_match[1];
-    }
-
-    // IE <= 7, FF <= 3: fall through to video link rather than embedded player
-    if (self._browser_lte('ie', 7) || self._browser_lte('firefox', 3)) {
-        self.show_video = false;
-        self.clickthrough = true;
-    }
-});
-
-MPNotif.prototype._mark_as_shown = _.safewrap(function() {
-    // click on background to dismiss
-    var self = this;
-    _.register_event(self._get_el('bg'), 'click', function() {
-        self.dismiss();
-    });
-
-    var get_style = function(el, style_name) {
-        var styles = {};
-        if (document$1.defaultView && document$1.defaultView.getComputedStyle) {
-            styles = document$1.defaultView.getComputedStyle(el, null); // FF3 requires both args
-        } else if (el.currentStyle) { // IE
-            styles = el.currentStyle;
-        }
-        return styles[style_name];
-    };
-
-    if (this.campaign_id) {
-        var notif_el = this._get_el('overlay');
-        if (notif_el && get_style(notif_el, 'visibility') !== 'hidden' && get_style(notif_el, 'display') !== 'none') {
-            this._mark_delivery();
-        }
-    }
-});
-
-MPNotif.prototype._mark_delivery = _.safewrap(function(extra_props) {
-    if (!this.marked_as_shown) {
-        this.marked_as_shown = true;
-
-        if (this.campaign_id) {
-            // mark notification shown (local cache)
-            this._get_shown_campaigns()[this.campaign_id] = 1 * new Date();
-            this.persistence.save();
-        }
-
-        // track delivery
-        this._track_event('$campaign_delivery', extra_props);
-
-        // mark notification shown (mixpanel property)
-        this.mixpanel['people']['append']({
-            '$campaigns': this.campaign_id,
-            '$notifications': {
-                'campaign_id': this.campaign_id,
-                'message_id':  this.message_id,
-                'type':        'web',
-                'time':        new Date()
-            }
-        });
-    }
-});
-
-MPNotif.prototype._preload_images = function(all_loaded_cb) {
-    var self = this;
-    if (this.imgs_to_preload.length === 0) {
-        all_loaded_cb();
-        return;
-    }
-
-    var preloaded_imgs = 0;
-    var img_objs = [];
-    var onload = function() {
-        preloaded_imgs++;
-        if (preloaded_imgs === self.imgs_to_preload.length && all_loaded_cb) {
-            all_loaded_cb();
-            all_loaded_cb = null;
-        }
-    };
-    for (var i = 0; i < this.imgs_to_preload.length; i++) {
-        var img = new Image();
-        img.onload = onload;
-        img.src = this.imgs_to_preload[i];
-        if (img.complete) {
-            onload();
-        }
-        img_objs.push(img);
-    }
-
-    // IE6/7 doesn't fire onload reliably
-    if (this._browser_lte('ie', 7)) {
-        setTimeout(function() {
-            var imgs_loaded = true;
-            for (i = 0; i < img_objs.length; i++) {
-                if (!img_objs[i].complete) {
-                    imgs_loaded = false;
-                }
-            }
-            if (imgs_loaded && all_loaded_cb) {
-                all_loaded_cb();
-                all_loaded_cb = null;
-            }
-        }, 500);
-    }
-};
-
-MPNotif.prototype._remove_notification_el = _.safewrap(function() {
-    window$1.clearInterval(this._video_progress_checker);
-    this.notification_el.style.visibility = 'hidden';
-    this.body_el.removeChild(this.notification_el);
-});
-
-MPNotif.prototype._set_client_config = function() {
-    var get_browser_version = function(browser_ex) {
-        var match = navigator.userAgent.match(browser_ex);
-        return match && match[1];
-    };
-    this.browser_versions = {};
-    this.browser_versions['chrome']  = get_browser_version(/Chrome\/(\d+)/);
-    this.browser_versions['firefox'] = get_browser_version(/Firefox\/(\d+)/);
-    this.browser_versions['ie']      = get_browser_version(/MSIE (\d+).+/);
-    if (!this.browser_versions['ie'] && !(window$1.ActiveXObject) && 'ActiveXObject' in window$1) {
-        this.browser_versions['ie'] = 11;
-    }
-
-    this.body_el = document$1.body || document$1.getElementsByTagName('body')[0];
-    if (this.body_el) {
-        this.doc_width = Math.max(
-                this.body_el.scrollWidth, document$1.documentElement.scrollWidth,
-                this.body_el.offsetWidth, document$1.documentElement.offsetWidth,
-                this.body_el.clientWidth, document$1.documentElement.clientWidth
-            );
-        this.doc_height = Math.max(
-                this.body_el.scrollHeight, document$1.documentElement.scrollHeight,
-                this.body_el.offsetHeight, document$1.documentElement.offsetHeight,
-                this.body_el.clientHeight, document$1.documentElement.clientHeight
-            );
-    }
-
-    // detect CSS compatibility
-    var ie_ver = this.browser_versions['ie'];
-    var sample_styles = document$1.createElement('div').style,
-        is_css_compatible = function(rule) {
-            if (rule in sample_styles) {
-                return true;
-            }
-            if (!ie_ver) {
-                rule = rule[0].toUpperCase() + rule.slice(1);
-                var props = ['O' + rule, 'Webkit' + rule, 'Moz' + rule];
-                for (var i = 0; i < props.length; i++) {
-                    if (props[i] in sample_styles) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        };
-    this.use_transitions = this.body_el &&
-        is_css_compatible('transition') &&
-        is_css_compatible('transform');
-    this.flip_animate = (this.browser_versions['chrome'] >= 33 || this.browser_versions['firefox'] >= 15) &&
-        this.body_el &&
-        is_css_compatible('backfaceVisibility') &&
-        is_css_compatible('perspective') &&
-        is_css_compatible('transform');
-};
-
-MPNotif.prototype._switch_to_video = _.safewrap(function() {
-    var self = this,
-        anims = [
-            {
-                el:    self._get_notification_display_el(),
-                attr:  'opacity',
-                start: 1.0,
-                goal:  0.0
-            },
-            {
-                el:    self._get_notification_display_el(),
-                attr:  'top',
-                start: MPNotif.NOTIF_TOP,
-                goal:  -500
-            },
-            {
-                el:    self._get_el('video-noflip'),
-                attr:  'opacity',
-                start: 0.0,
-                goal:  1.0
-            },
-            {
-                el:    self._get_el('video-noflip'),
-                attr:  'top',
-                start: -self.video_height * 2,
-                goal:  0
-            }
-        ];
-
-    if (self.mini) {
-        var bg = self._get_el('bg'),
-            overlay = self._get_el('overlay');
-        bg.style.width = '100%';
-        bg.style.height = '100%';
-        overlay.style.width = '100%';
-
-        self._add_class(self._get_notification_display_el(), 'exiting');
-        self._add_class(bg, 'visible');
-
-        anims.push({
-            el:    self._get_el('bg'),
-            attr:  'opacity',
-            start: 0.0,
-            goal:  MPNotif.BG_OPACITY
-        });
-    }
-
-    var video_el = self._get_el('video-holder');
-    video_el.innerHTML = self.video_iframe;
-
-    var video_ready = function() {
-        if (window$1['YT'] && window$1['YT']['loaded']) {
-            self._yt_video_ready();
-        }
-        self.showing_video = true;
-        self._get_notification_display_el().style.visibility = 'hidden';
-    };
-    if (self.flip_animate) {
-        self._add_class('flipper', 'flipped');
-        setTimeout(video_ready, MPNotif.ANIM_TIME);
-    } else {
-        self._animate_els(anims, MPNotif.ANIM_TIME, video_ready);
-    }
-});
-
-MPNotif.prototype._track_event = function(event_name, properties, cb) {
-    if (this.campaign_id) {
-        properties = properties || {};
-        properties = _.extend(properties, {
-            'campaign_id':     this.campaign_id,
-            'message_id':      this.message_id,
-            'message_type':    'web_inapp',
-            'message_subtype': this.notif_type
-        });
-        this.mixpanel['track'](event_name, properties, cb);
-    } else if (cb) {
-        cb.call();
-    }
-};
-
-MPNotif.prototype._yt_video_ready = _.safewrap(function() {
-    var self = this;
-    if (self.video_inited) {
-        return;
-    }
-    self.video_inited = true;
-
-    var progress_bar  = self._get_el('video-elapsed'),
-        progress_time = self._get_el('video-time'),
-        progress_el   = self._get_el('video-progress');
-
-    new window$1['YT']['Player'](MPNotif.MARKUP_PREFIX + '-video-frame', {
-        'events': {
-            'onReady': function(event) {
-                var ytplayer = event['target'],
-                    video_duration = ytplayer['getDuration'](),
-                    pad = function(i) {
-                        return ('00' + i).slice(-2);
-                    },
-                    update_video_time = function(current_time) {
-                        var secs = Math.round(video_duration - current_time),
-                            mins = Math.floor(secs / 60),
-                            hours = Math.floor(mins / 60);
-                        secs -= mins * 60;
-                        mins -= hours * 60;
-                        progress_time.innerHTML = '-' + (hours ? hours + ':' : '') + pad(mins) + ':' + pad(secs);
-                    };
-                update_video_time(0);
-                self._video_progress_checker = window$1.setInterval(function() {
-                    var current_time = ytplayer['getCurrentTime']();
-                    progress_bar.style.width = (current_time / video_duration * 100) + '%';
-                    update_video_time(current_time);
-                }, 250);
-                _.register_event(progress_el, 'click', function(e) {
-                    var clickx = Math.max(0, e.pageX - progress_el.getBoundingClientRect().left);
-                    ytplayer['seekTo'](video_duration * clickx / progress_el.clientWidth, true);
-                });
-            }
-        }
-    });
-});
-
 // EXPORTS (for closure compiler)
 
 // MixpanelLib Exports
 MixpanelLib.prototype['init']                            = MixpanelLib.prototype.init;
 MixpanelLib.prototype['reset']                           = MixpanelLib.prototype.reset;
-MixpanelLib.prototype['disable']                         = MixpanelLib.prototype.disable;
-MixpanelLib.prototype['time_event']                      = MixpanelLib.prototype.time_event;
 MixpanelLib.prototype['track']                           = MixpanelLib.prototype.track;
-MixpanelLib.prototype['track_links']                     = MixpanelLib.prototype.track_links;
-MixpanelLib.prototype['track_forms']                     = MixpanelLib.prototype.track_forms;
-MixpanelLib.prototype['track_pageview']                  = MixpanelLib.prototype.track_pageview;
 MixpanelLib.prototype['register']                        = MixpanelLib.prototype.register;
 MixpanelLib.prototype['register_once']                   = MixpanelLib.prototype.register_once;
 MixpanelLib.prototype['unregister']                      = MixpanelLib.prototype.unregister;
 MixpanelLib.prototype['identify']                        = MixpanelLib.prototype.identify;
 MixpanelLib.prototype['alias']                           = MixpanelLib.prototype.alias;
-MixpanelLib.prototype['name_tag']                        = MixpanelLib.prototype.name_tag;
 MixpanelLib.prototype['set_config']                      = MixpanelLib.prototype.set_config;
 MixpanelLib.prototype['get_config']                      = MixpanelLib.prototype.get_config;
 MixpanelLib.prototype['get_property']                    = MixpanelLib.prototype.get_property;
 MixpanelLib.prototype['get_distinct_id']                 = MixpanelLib.prototype.get_distinct_id;
-MixpanelLib.prototype['toString']                        = MixpanelLib.prototype.toString;
-MixpanelLib.prototype['_check_and_handle_notifications'] = MixpanelLib.prototype._check_and_handle_notifications;
-MixpanelLib.prototype['_show_notification']              = MixpanelLib.prototype._show_notification;
-MixpanelLib.prototype['opt_out_tracking']                = MixpanelLib.prototype.opt_out_tracking;
-MixpanelLib.prototype['opt_in_tracking']                 = MixpanelLib.prototype.opt_in_tracking;
-MixpanelLib.prototype['has_opted_out_tracking']          = MixpanelLib.prototype.has_opted_out_tracking;
-MixpanelLib.prototype['has_opted_in_tracking']           = MixpanelLib.prototype.has_opted_in_tracking;
-MixpanelLib.prototype['clear_opt_in_out_tracking']       = MixpanelLib.prototype.clear_opt_in_out_tracking;
 
 // MixpanelPersistence Exports
 MixpanelPersistence.prototype['properties']            = MixpanelPersistence.prototype.properties;
@@ -5932,18 +2871,6 @@ MixpanelPersistence.prototype['update_search_keyword'] = MixpanelPersistence.pro
 MixpanelPersistence.prototype['update_referrer_info']  = MixpanelPersistence.prototype.update_referrer_info;
 MixpanelPersistence.prototype['get_cross_subdomain']   = MixpanelPersistence.prototype.get_cross_subdomain;
 MixpanelPersistence.prototype['clear']                 = MixpanelPersistence.prototype.clear;
-
-// MixpanelPeople Exports
-MixpanelPeople.prototype['set']           = MixpanelPeople.prototype.set;
-MixpanelPeople.prototype['set_once']      = MixpanelPeople.prototype.set_once;
-MixpanelPeople.prototype['unset']         = MixpanelPeople.prototype.unset;
-MixpanelPeople.prototype['increment']     = MixpanelPeople.prototype.increment;
-MixpanelPeople.prototype['append']        = MixpanelPeople.prototype.append;
-MixpanelPeople.prototype['union']         = MixpanelPeople.prototype.union;
-MixpanelPeople.prototype['track_charge']  = MixpanelPeople.prototype.track_charge;
-MixpanelPeople.prototype['clear_charges'] = MixpanelPeople.prototype.clear_charges;
-MixpanelPeople.prototype['delete_user']   = MixpanelPeople.prototype.delete_user;
-MixpanelPeople.prototype['toString']      = MixpanelPeople.prototype.toString;
 
 _.safewrap_class(MixpanelLib, ['identify', '_check_and_handle_notifications', '_show_notification']);
 
@@ -5984,7 +2911,7 @@ var override_mp_init_func = function() {
 
             mixpanel_master = instance;
             if (init_type === INIT_SNIPPET) {
-                window$1[PRIMARY_INSTANCE_NAME] = mixpanel_master;
+                win[PRIMARY_INSTANCE_NAME] = mixpanel_master;
             }
             extend_mp();
         }
@@ -6008,7 +2935,7 @@ var add_dom_loaded_handler = function() {
 
     function do_scroll_check() {
         try {
-            document$1.documentElement.doScroll('left');
+            document.documentElement.doScroll('left');
         } catch(e) {
             setTimeout(do_scroll_check, 1);
             return;
@@ -6017,35 +2944,35 @@ var add_dom_loaded_handler = function() {
         dom_loaded_handler();
     }
 
-    if (document$1.addEventListener) {
-        if (document$1.readyState === 'complete') {
+    if (document.addEventListener) {
+        if (document.readyState === 'complete') {
             // safari 4 can fire the DOMContentLoaded event before loading all
             // external JS (including this file). you will see some copypasta
             // on the internet that checks for 'complete' and 'loaded', but
             // 'loaded' is an IE thing
             dom_loaded_handler();
         } else {
-            document$1.addEventListener('DOMContentLoaded', dom_loaded_handler, false);
+            document.addEventListener('DOMContentLoaded', dom_loaded_handler, false);
         }
-    } else if (document$1.attachEvent) {
+    } else if (document.attachEvent) {
         // IE
-        document$1.attachEvent('onreadystatechange', dom_loaded_handler);
+        document.attachEvent('onreadystatechange', dom_loaded_handler);
 
         // check to make sure we arn't in a frame
         var toplevel = false;
         try {
-            toplevel = window$1.frameElement === null;
+            toplevel = win.frameElement === null;
         } catch(e) {
             // noop
         }
 
-        if (document$1.documentElement.doScroll && toplevel) {
+        if (document.documentElement.doScroll && toplevel) {
             do_scroll_check();
         }
     }
 
     // fallback handler, always will work
-    _.register_event(window$1, 'load', dom_loaded_handler, true);
+    _.register_event(win, 'load', dom_loaded_handler, true);
 };
 
 function init_as_module() {
